@@ -40,7 +40,7 @@ git cms-merge-topic -u CMSBParking:fixKinParticleVtxFitter
 ## Add the BParkingNano package and build everything
 
 ```shell
-git clone git@github.com:CMSBParking/BParkingNANO.git  ./PhysicsTools
+git clone git@github.com:friti/BParkingNANO.git  ./PhysicsTools
 git cms-addpkg PhysicsTools/NanoAOD
 scram b
 ```
