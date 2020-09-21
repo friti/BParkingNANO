@@ -1,4 +1,5 @@
-# nanoAOD producer customized for BParking analysis (focus on RK/K*/phi)
+# nanoAOD producer customized for R(J/\psi) analysis (forked from RK analisis)
+See at the end for UL
 
 ## Getting started
 
@@ -10,6 +11,7 @@ git cms-init
 ```
 
 ## Add the latest code and model (2019Aug07) for the electron ID 
+# skip if you don't use electrons
 
 ```shell
 git cms-addpkg RecoEgamma/EgammaElectronProducers
@@ -51,6 +53,19 @@ scram b
 cd PhysicsTools/BParkingNano/test/
 cmsenv 
 cmsRun run_nano_cfg.py
+```
+
+# For UL
+```shell
+cmsrel CMSSW_10_6_14
+cd CMSSW_10_6_14/src
+cmsenv
+git cms-init
+git cms-merge-topic -u friti:TransientTracks
+git cms-merge-topic -u friti:KinParticleVtxFitter
+git clone git@github.com:friti/BParkingNANO.git  ./PhysicsTools
+git cms-addpkg PhysicsTools/NanoAOD
+scram b
 ```
 
 ## Contributing
