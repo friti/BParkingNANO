@@ -22,6 +22,7 @@ from PhysicsTools.BParkingNano.tracksBPark_cff import *
 ## B collections
 from PhysicsTools.BParkingNano.BTommm_cff import *
 from PhysicsTools.BParkingNano.BTopmm_cff import *
+from PhysicsTools.BParkingNano.BTokmm_cff import *
 from PhysicsTools.BParkingNano.BToKstarLL_cff import *
 
 
@@ -60,6 +61,10 @@ def nanoAOD_customizeBTommm(process):
 
 def nanoAOD_customizeBTopmm(process):
     process.nanoBpmmSequence = cms.Sequence( BTopmmSequence + BTopmmTable )
+    return process
+
+def nanoAOD_customizeBTokmm(process):
+    process.nanoBkmmSequence = cms.Sequence( BTokmmSequence + BTokmmTable )
     return process
 
 #three possibilities for K*LL
