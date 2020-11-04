@@ -269,6 +269,76 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      cand.addUserFloat("fitted_k_eta" , fitter.daughter_p4(2).eta());
 	      cand.addUserFloat("fitted_k_phi" , fitter.daughter_p4(2).phi());
 	      
+
+	      //new variables
+
+	      TLorentzVector P_b;
+	      P_b.SetPtEtaPhiM(cand.pt(),cand.eta(),cand.phi(),cand.mass());
+	      
+	      TLorentzVector P_k;
+	      P_k.SetPtEtaPhiM(k_ptr->pt(),k_ptr->eta(),k_ptr->phi(),k_ptr->mass());
+	      
+	      TLorentzVector P_l1;
+	      P_l1.SetPtEtaPhiM(l1_ptr->pt(),l1_ptr->eta(),l1_ptr->phi(),l1_ptr->mass());
+	      
+	      TLorentzVector P_l2;
+	      P_l2.SetPtEtaPhiM(l2_ptr->pt(),l2_ptr->eta(),l2_ptr->phi(),l2_ptr->mass());
+	      
+	      
+	      float m_miss_2=(P_b-P_k-P_l1-P_l2)*(P_b-P_k-P_l1-P_l2);
+	      
+	      float Q_2=(P_b-P_l1-P_l2)*(P_b-P_l1-P_l2);
+	      
+	      float pt_miss=(P_b.Pt()-P_k.Pt()-P_l1.Pt()-P_l2.Pt());
+	      
+	      float pt_miss_vec=((P_b-P_k-P_l1-P_l2).Pt());
+
+	      float pt_var=((P_l1+P_l2).Pt()-P_k.Pt());
+	     
+	      float DR=deltaR(P_l1.Eta(),P_l1.Phi(),P_l2.Eta(),P_l2.Phi());
+	      
+	      //float deta = P_l1.Eta() - P_l2.Eta();
+	      //float dphi = P_l1.Phi() - P_l2.Phi();
+	      
+	      //float DR_2=std::sqrt(deta * deta + dphi * dphi);	      
+
+
+	      float m_jpsi=sqrt((P_l1+P_l2)*(P_l1+P_l2));
+	      
+	      cand.addUserFloat("m_miss_2", m_miss_2);
+	      cand.addUserFloat("Q_2",Q_2);
+
+	      cand.addUserFloat("pt_miss",pt_miss);
+	      cand.addUserFloat("pt_miss_vec",pt_miss_vec);
+	      
+
+	      cand.addUserFloat("pt_var",pt_var);
+	      
+	      cand.addUserFloat("DR",DR);
+
+	      cand.addUserFloat("m_jpsi",m_jpsi);
+	      
+
+	      //energia del mu unpaired in diversi sistemi di riferimento                  
+	      TLorentzVector P_mu=P_k;	      
+
+	      TVector3 mu_beta_lab=P_b.BoostVector();
+	      
+	      P_mu.Boost(-mu_beta_lab);
+	      
+	      cand.addUserFloat("E_mu_star",P_mu.E());
+	      
+	      P_mu=P_k;	      
+	      	      
+	      TLorentzVector jpsi=P_l1+P_l2;
+	      
+	      TVector3 jpsi_beta_lab=jpsi.BoostVector();
+	      
+	      P_mu.Boost(-jpsi_beta_lab);
+	    
+	      cand.addUserFloat("E_mu_#",P_mu.E());
+	      
+
 	      if( !post_vtx_selection_(cand) ) continue;        
 	      
 	      //compute isolation

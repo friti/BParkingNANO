@@ -198,6 +198,17 @@ BTopmmTable = cms.EDProducer(
         k_iso04  = ufloat('k_iso04'),
         b_iso03  = ufloat('b_iso03'),
         b_iso04  = ufloat('b_iso04'),
+
+        #my variables
+        m_miss_sq=ufloat('m_miss_2'),
+        Q_sq=ufloat('Q_2'),
+        pt_miss=ufloat('pt_miss'),
+        pt_miss_vec=ufloat('pt_miss_vec'),
+        pt_var=ufloat('pt_var'),
+        DR=ufloat('DR'),
+        E_mu_star=ufloat('E_mu_star'),
+        E_mu_canc=ufloat('E_mu_#'),
+        m_jpsi=ufloat('m_jpsi'),
       
 ))
 
