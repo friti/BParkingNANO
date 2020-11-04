@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 
 options = VarParsing('python')
 
-options.register('isMC', True,
+options.register('isMC', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Run this on real data"
@@ -34,7 +34,7 @@ options.register('skip', 0,
     "skip first N events"
 )
 
-options.setDefault('maxEvents',-1)
+options.setDefault('maxEvents',5000)
 options.setDefault('tag', '10215')
 options.parseArguments()
 
@@ -47,7 +47,7 @@ outputFileNANO = cms.untracked.string('_'.join(['RJPsi', extension[options.isMC]
 outputFileFEVT = cms.untracked.string('_'.join(['BParkFullEvt', extension[options.isMC], options.tag])+'.root')
 if not options.inputFiles:
     options.inputFiles = ['root://cms-xrd-global.cern.ch///store/data/Run2018D/Charmonium/MINIAOD/12Nov2019_UL2018-v1/280000/165DE65D-6645-1342-96AB-6FD03E987675.root'] if not options.isMC else \
-                         ['file:RJpsi-JpsiX-RunIISummer19UL18MINIAOD.root']                         
+                         ['file:/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_9.root']                         
 
 annotation = '%s nevts:%d' % (outputFileNANO, options.maxEvents)
 
@@ -129,18 +129,17 @@ process.GlobalTag = GlobalTag(process.GlobalTag, globaltag, '')
 
 from PhysicsTools.BParkingNano.nanoBPark_mmm_cff import *
 process = nanoAOD_customizeMuonTriggerBPark(process)
-#process = nanoAOD_customizeElectronFilteredBPark(process)
 process = nanoAOD_customizeTrackFilteredBPark(process)
 process = nanoAOD_customizeBTommm(process)
-#process = nanoAOD_customizeBToKstarEE(process)
-#process = nanoAOD_customizeBToKstarMuMu(process)
+process = nanoAOD_customizeBTopmm(process) #Bc-> JpsiPi -> mu mu pi
 process = nanoAOD_customizeTriggerBitsBPark(process)
-
 
 
 
 # Path and EndPath definitions
 process.nanoAOD_mmm_step = cms.Path(process.nanoSequence + process.nanoBmmmSequence + CountBTommm )
+process.nanoAOD_pmm_step = cms.Path(process.nanoSequence + process.nanoBpmmSequence + CountBTopmm )
+
 #process.nanoAOD_Kee_step   = cms.Path(process.nanoSequence + process.nanoBKeeSequence   + CountBToKee   )
 #process.nanoAOD_KstarMuMu_step = cms.Path(process.nanoSequence + process.KstarToKPiSequence + process.nanoBKstarMuMuSequence + CountBToKstarMuMu )
 #process.nanoAOD_KstarEE_step  = cms.Path(process.nanoSequence+ process.KstarToKPiSequence + process.nanoBKstarEESequence + CountBToKstarEE  )
@@ -156,13 +155,11 @@ process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)
 
 # Schedule definition
 process.schedule = cms.Schedule(
-                                process.nanoAOD_mmm_step,
- #                               process.nanoAOD_Kee_step, 
- #                               process.nanoAOD_KstarMuMu_step,
- #                               process.nanoAOD_KstarEE_step,
-                                process.endjob_step, 
-                                process.NANOAODoutput_step
-                               )
+    process.nanoAOD_mmm_step,
+    process.nanoAOD_pmm_step,
+    process.endjob_step, 
+    process.NANOAODoutput_step
+)
 if options.wantFullRECO:
     process.schedule = cms.Schedule(
                                     process.nanoAOD_mmm_step,
@@ -179,10 +176,8 @@ associatePatAlgosToolsTask(process)
 process.NANOAODoutput.SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
                                    'nanoAOD_mmm_step', 
-  #                                 'nanoAOD_Kee_step',
-  #                                 'nanoAOD_KstarMuMu_step',
-  #                                 'nanoAOD_KstarEE_step',
-                                   )
+                                   'nanoAOD_pmm_step',
+                                     )
 )
 
 
