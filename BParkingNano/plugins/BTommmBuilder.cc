@@ -34,7 +34,7 @@
 #include <algorithm>
 #include "KinVtxFitter.h"
 
-constexpr bool debugGen = true;
+constexpr bool debugGen = false;
 
 class BTommmBuilder : public edm::global::EDProducer<> {
 
