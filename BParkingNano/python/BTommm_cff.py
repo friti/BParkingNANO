@@ -236,6 +236,7 @@ BTommmTable = cms.EDProducer(
         is_jpsi_pi=uint("is_jpsi_pi"),
         is_jpsi_3pi=uint("is_jpsi_3pi"),
         is_jpsi_hc=uint("is_jpsi_hc"),
+        is_error=uint("is_error"),
         weightGen= ufloat("weightGen")
     )
 )
