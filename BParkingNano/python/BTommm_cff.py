@@ -175,13 +175,8 @@ BTommmTable = cms.EDProducer(
         mll_llfit = Var('userCand("dilepton").userFloat("fitted_mass")', float), # this might not work                        
         mllErr_llfit = Var('userCand("dilepton").userFloat("fitted_massErr")', float), # this might not work                  
         mll_fullfit = ufloat('fitted_mll'),
-#        mll_vtxx= Var('userCand("dilepton").userFloat("vtx_x")',float),
-#        mll_vtxy= Var('userCand("dilepton").userFloat("vtx_y")',float),
-#        mll_vtxz= Var('userCand("dilepton").userFloat("vtx_z")',float),
-#        mll_vtxex= Var('userCand("dilepton").userFloat("vtx_ex")',float),
-#        mll_vtxey= Var('userCand("dilepton").userFloat("vtx_ey")',float),
-#        mll_vtxez= Var('userCand("dilepton").userFloat("vtx_ez")',float),
-
+        jpsi_chi2 = Var('userCand("dilepton").userFloat("sv_chi2")', float),
+        jpsi_svprob = Var('userCand("dilepton").userFloat("sv_prob")', float),
         # Cos(theta)                                                                                                          
         cos2D = ufloat('cos_theta_2D'),
         fit_cos2D = ufloat('fitted_cos_theta_2D'),
