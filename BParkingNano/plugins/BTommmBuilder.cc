@@ -34,6 +34,8 @@
 #include <algorithm>
 #include "KinVtxFitter.h"
 
+constexpr bool debugGen = true;
+
 class BTommmBuilder : public edm::global::EDProducer<> {
 
   // perhaps we need better structure here (begin run etc)
@@ -142,13 +144,13 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
   
   if(evt.eventAuxiliary().run() == 1){ //only if it is a MC sample
     //GEN
-    std::cout<<"In the flag code..."<<std::endl;
+    if(debugGen) std::cout<<"In the flag code..."<<std::endl;
     edm::Handle<GenParticleCollection> src;
     evt.getByToken(srcToken_, src);
     const size_t n = src->size();
     std::vector<int> final_daus;
 
-    std::cout<<"Number of gen particles: "<<n<<std::endl;
+    if(debugGen) std::cout<<"Number of gen particles: "<<n<<std::endl;
     
     for(unsigned int  i = 0; i < n; ++i) {  //loop on gen particles
       const reco::GenParticle & gen = (*src)[i];
@@ -160,49 +162,50 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
     
       if(abs(gen.pdgId()) == 443){  // looking for jpsi      
 
-	std::cout<<"There is a jpsi and she has "<<gen.numberOfDaughters()<<" daughters"<<std::endl;
+	if(debugGen) std::cout<<"There is a jpsi and she has "<<gen.numberOfDaughters()<<" daughters"<<std::endl;
 	for(unsigned int dau = 0; dau < gen.numberOfDaughters(); dau++){  //loop of jpsi daughters
-	  std::cout<<"Jpsi daughter: "<<gen.daughter(dau)->pdgId()<<std::endl;
+	  if(debugGen) std::cout<<"Jpsi daughter: "<<gen.daughter(dau)->pdgId()<<std::endl;
 	  is_b = 0;
 	  if (abs(gen.daughter(dau)->pdgId())==13){
 	    is_doublemu += 1;
 	  }
 	} //end loop on daughters
 	if(is_doublemu>=2){  // jpsi -> mu mu
-	  std::cout<<"The daughters are muons"<<std::endl;
+	  if(debugGen) std::cout<<"The daughters are muons"<<std::endl;
 	  the_b = gen.mother(0); // jpsi mother
 	  if(abs(the_b->pdgId()) == 541){ //Bc->jpsi
-	    std::cout<<"The direct mother is a Bc"<<std::endl;
+	    if(debugGen) std::cout<<"The direct mother is a Bc"<<std::endl;
 	    is_b = 1;
 	  }  
 	  else if(the_b->numberOfMothers() > 0){
 	    the_b = gen.mother(0)->mother(0); // Bc->X->jpsi
 	    if(abs(the_b->pdgId()) == 541 ){
-	      std::cout<<"The non direct mother is a Bc"<<std::endl;
+	      if(debugGen) std::cout<<"The non direct mother is a Bc"<<std::endl;
 	      is_b = 1;
 	    }
 	  }
 	  if(is_b == 1){
 	    
-	    std::cout<<"The Bc has "<<the_b->numberOfDaughters()<<"daughters"<<std::endl;
+	    if(debugGen) std::cout<<"The Bc has "<<the_b->numberOfDaughters()<<"daughters"<<std::endl;
 
 	    for(unsigned int bdau=0; bdau < the_b->numberOfDaughters(); bdau ++){
 	      daughter = the_b->daughter(bdau);
 	      if(abs(daughter->pdgId())!= 541 and abs(daughter->pdgId())!= 22){    //not gamma
 		final_daus.push_back(abs(daughter->pdgId()));
 		//	      cout<<daughter->pdgId()<<endl;
-		std::cout<<"The Bc daughters are "<< daughter->pdgId()<<std::endl;
+		if(debugGen) std::cout<<"The Bc daughters are "<< daughter->pdgId()<<std::endl;
 
 	      }
 	    }
       
 	    std::sort(final_daus.begin(), final_daus.end());  //sort the pdgIds of the daughters
-    
+	    /*
 	    for(unsigned int item=0; item< final_daus.size(); item ++){
-	      std::cout<<final_daus[item]<<std::endl;
-	      if(item == final_daus.size() -1) std::cout<<" "<<std::endl;
+	      if(debugGen) std::cout<<final_daus[item]<<std::endl;
+	      if(item == final_daus.size() -1) if(debugGen) std::cout<<" "<<std::endl;
 	    }
-	    
+	    */
+
 	    flag_jpsi_mu = 0;
 	    flag_psi2s_mu = 0;
 	    flag_chic0_mu = 0;
