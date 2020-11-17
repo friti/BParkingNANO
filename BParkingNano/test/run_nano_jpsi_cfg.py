@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 
 options = VarParsing('python')
 
-options.register('isMC', False,
+options.register('isMC', True,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Run this on real data"
@@ -34,7 +34,7 @@ options.register('skip', 0,
     "skip first N events"
 )
 
-options.setDefault('maxEvents',2000)
+options.setDefault('maxEvents',5000)
 options.setDefault('tag', '10215')
 options.parseArguments()
 
@@ -46,8 +46,8 @@ extension = {False : 'data', True : 'mc'}
 outputFileNANO = cms.untracked.string('_'.join(['RJPsi', extension[options.isMC], options.tag])+'.root')
 outputFileFEVT = cms.untracked.string('_'.join(['BParkFullEvt', extension[options.isMC], options.tag])+'.root')
 if not options.inputFiles:
-    options.inputFiles = ['root://cms-xrd-global.cern.ch///store/data/Run2018A/Charmonium/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/08F41CB9-8F1F-D44F-A5FC-D17E38328C4C.root'] if not options.isMC else \
-                         ['file:/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_9.root']                         
+    options.inputFiles = ['root://cms-xrd-global.cern.ch//store/data/Run2018D/Charmonium/MINIAOD/12Nov2019_UL2018-v1/00000/00AC5CFC-5390-F947-911B-2074A7DFF23D.root'] if not options.isMC else \
+                         ['file:/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_1000.root']                         
 
 annotation = '%s nevts:%d' % (outputFileNANO, options.maxEvents)
 
