@@ -152,7 +152,7 @@ BTommmTable = cms.EDProducer(
     extension=cms.bool(False),
     variables=cms.PSet(
         # pre-fit quantities                                                      
-        CandVars,
+        BParkCandVars,
         #nome branch= nome variabile del .cc
         l1Idx = uint('l1_idx'),
         l2Idx = uint('l2_idx'),

@@ -150,6 +150,8 @@ void TrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const 
       skipTrack=false;
       break; // at least for one trg muon to pass this cuts
     }
+    // disable cleaning even when the trgMuon collection is empty
+    if (drTrg_Cleaning_<=0 && dzTrg_cleaning_<0) skipTrack=false;
     // if track is closer to at least a triggering muon keep it
     if (skipTrack) continue;
 
