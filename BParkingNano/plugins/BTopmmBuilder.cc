@@ -49,6 +49,7 @@ public:
     isolostTracksToken_(consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("lostTracks"))),
 
     //GEN
+
     srcToken_(consumes<GenParticleCollection>(cfg.getParameter<edm::InputTag>("srcGen"))), 
     //TRIGGER
     triggerBits_(consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("bits"))),
