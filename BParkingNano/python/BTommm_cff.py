@@ -70,6 +70,7 @@ BTommm = cms.EDProducer(
     ),
 
     #GEN
+
     srcGen = cms.InputTag("prunedGenParticles"),
     #TRIGGER                                        
      
