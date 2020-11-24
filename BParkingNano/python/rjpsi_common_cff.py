@@ -111,7 +111,7 @@ TableDefaultVariables = cms.PSet(
     b_iso03     = ufloat('b_iso03'),
     b_iso04     = ufloat('b_iso04'),
 
-    #my variables
+    # my variables
     m_miss_sq   = ufloat('m_miss_2'),
     Q_sq        = ufloat('Q_2'),
     pt_miss     = ufloat('pt_miss'),
@@ -121,4 +121,19 @@ TableDefaultVariables = cms.PSet(
     E_mu_star   = ufloat('E_mu_star'),
     E_mu_canc   = ufloat('E_mu_#'),
     m_jpsi      = ufloat('m_jpsi'),
+
+    # Gen Variables
+    is_jpsi_mu   = uint("is_jpsi_mu"),
+    is_psi2s_mu  = uint("is_psi2s_mu"),
+    is_chic0_mu  = uint("is_chic0_mu"),
+    is_chic1_mu  = uint("is_chic1_mu"),
+    is_chic2_mu  = uint("is_chic2_mu"),
+    is_hc_mu     = uint("is_hc_mu"),
+    is_jpsi_tau  = uint("is_jpsi_tau"),
+    is_psi2s_tau = uint("is_psi2s_tau"),
+    is_jpsi_pi   = uint("is_jpsi_pi"),
+    is_jpsi_3pi  = uint("is_jpsi_3pi"),
+    is_jpsi_hc   = uint("is_jpsi_hc"),
+    is_error     = uint("is_error"),
+    weightGen    = ufloat("weightGen"),
 )

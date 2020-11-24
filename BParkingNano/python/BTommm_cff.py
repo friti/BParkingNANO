@@ -16,20 +16,6 @@ BTommm = cms.EDProducer(
 )
 
 BTommmTableVariables = TableDefaultVariables.clone()
-# Gen Variables
-BTommmTableVariables.is_jpsi_mu   = uint("is_jpsi_mu")
-BTommmTableVariables.is_psi2s_mu  = uint("is_psi2s_mu")
-BTommmTableVariables.is_chic0_mu  = uint("is_chic0_mu")
-BTommmTableVariables.is_chic1_mu  = uint("is_chic1_mu")
-BTommmTableVariables.is_chic2_mu  = uint("is_chic2_mu")
-BTommmTableVariables.is_hc_mu     = uint("is_hc_mu")
-BTommmTableVariables.is_jpsi_tau  = uint("is_jpsi_tau")
-BTommmTableVariables.is_psi2s_tau = uint("is_psi2s_tau")
-BTommmTableVariables.is_jpsi_pi   = uint("is_jpsi_pi")
-BTommmTableVariables.is_jpsi_3pi  = uint("is_jpsi_3pi")
-BTommmTableVariables.is_jpsi_hc   = uint("is_jpsi_hc")
-BTommmTableVariables.is_error     = uint("is_error")
-BTommmTableVariables.weightGen    = ufloat("weightGen")
 
 BTommmTable = TableDefault.clone()
 BTommmTable.src       = cms.InputTag("BTommm")
