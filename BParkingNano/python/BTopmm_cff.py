@@ -10,6 +10,7 @@ BTopmmCfg.leptonTransientTracks = JpsiMuonPairs.transientTracksSrc
 BTopmm = cms.EDProducer(
     'BTopmmBuilder',
     BTopmmCfg,
+    srcGen = cms.InputTag("prunedGenParticles"),
 )
 
 BTopmmTableVariables = TableDefaultVariables.clone()

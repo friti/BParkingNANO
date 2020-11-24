@@ -10,6 +10,7 @@ BTokmmCfg.leptonTransientTracks = JpsiMuonPairs.transientTracksSrc
 BTokmm = cms.EDProducer(
     'BTokmmBuilder',
     BTokmmCfg,
+    srcGen = cms.InputTag("prunedGenParticles"),
 )
 
 BTokmmTableVariables = TableDefaultVariables.clone()

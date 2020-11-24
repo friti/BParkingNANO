@@ -587,9 +587,9 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 		if( !isotrk_selection_(trk) ) continue;
 		
 		// only consider tracks originating close to the three bodies
-		if ( fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		if ( fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		if ( fabs(trk.dz() - k_ptr ->bestTrack()->dz()) > 0.4 ) continue;
+		if ( !l1_ptr->bestTrack() || fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
+		if ( !l2_ptr->bestTrack() || fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;
+		if ( !k_ptr ->bestTrack() || fabs(trk.dz() - k_ptr ->bestTrack()->dz()) > 0.4 ) continue;
 		
 		// check if the track is the kaon
 		/*if (k_ptr->userCand("cand") ==  edm::Ptr<reco::Candidate> ( iso_tracks, iTrk ) ) {
