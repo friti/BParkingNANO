@@ -585,6 +585,12 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 		const pat::PackedCandidate & trk = (iTrk < nTracks) ? (*iso_tracks)[iTrk] : (*iso_lostTracks)[iTrk-nTracks];
 		// define selections for iso tracks (pT, eta, ...)
 		if( !isotrk_selection_(trk) ) continue;
+		
+		// only consider tracks originating close to the three bodies
+		if ( !l1_ptr->bestTrack() || fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
+		if ( !l2_ptr->bestTrack() || fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;
+		if ( !k_ptr ->bestTrack() || fabs(trk.dz() - k_ptr ->bestTrack()->dz()) > 0.4 ) continue;
+		
 		// check if the track is the kaon
 		/*if (k_ptr->userCand("cand") ==  edm::Ptr<reco::Candidate> ( iso_tracks, iTrk ) ) {
 		  
@@ -604,17 +610,17 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 		float dr_to_l1 = deltaR(cand.userFloat("fitted_l1_eta"), cand.userFloat("fitted_l1_phi"), trk.eta(), trk.phi());
 		float dr_to_l2 = deltaR(cand.userFloat("fitted_l2_eta"), cand.userFloat("fitted_l2_phi"), trk.eta(), trk.phi());
 		float dr_to_k  = deltaR(cand.userFloat("fitted_k_eta") , cand.userFloat("fitted_k_phi") , trk.eta(), trk.phi());
-		float dr_to_b  = deltaR(cand.userFloat("fitted_eta")   , cand.userFloat("fitted_phi") , trk.eta(), trk.phi());
+		float dr_to_b  = deltaR(cand.userFloat("fitted_eta")   , cand.userFloat("fitted_phi")   , trk.eta(), trk.phi());
 		
-		if (dr_to_l1 < 0.4){
+		if (dr_to_l1 < 0.4 && dr_to_l1>0.01){
 		  l1_iso04 += trk.pt();
 		  if ( dr_to_l1 < 0.3) l1_iso03 += trk.pt();
 		}
-		if (dr_to_l2 < 0.4){
+		if (dr_to_l2 < 0.4 && dr_to_l2>0.01){
 		  l2_iso04 += trk.pt();
 		  if (dr_to_l2 < 0.3)  l2_iso03 += trk.pt();
 		}
-		if (dr_to_k < 0.4){
+		if (dr_to_k < 0.4 && dr_to_k>0.01){
 		  k_iso04 += trk.pt();
 		  if (dr_to_k < 0.3) k_iso03 += trk.pt();
 		}
