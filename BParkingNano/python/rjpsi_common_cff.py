@@ -84,7 +84,10 @@ TableDefaultVariables = cms.PSet(
     mll_llfit    = Var('userCand("dilepton").userFloat("fitted_mass")', float), # this might not work                        
     mllErr_llfit = Var('userCand("dilepton").userFloat("fitted_massErr")', float), # this might not work                  
     mll_fullfit  = ufloat('fitted_mll'),
-    # Cos(theta)                                                                                                          
+    # Cos(theta)                                                                        
+    jpsi_chi2 = Var('userCand("dilepton").userFloat("sv_chi2")', float),
+    jpsi_svprob = Var('userCand("dilepton").userFloat("sv_prob")', float),
+
     cos2D     = ufloat('cos_theta_2D'),
     fit_cos2D = ufloat('fitted_cos_theta_2D'),
     # post-fit momentum                                                                                                   

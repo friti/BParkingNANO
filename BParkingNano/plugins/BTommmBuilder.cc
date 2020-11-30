@@ -277,6 +277,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
   if(index==triggerBits->size()){
     //    std::cout<<"Non ha HLT path giusto"<<std::endl;
     evt.put(std::move(ret_val));
+    
   }                                                                               
   else if(index!=triggerBits->size()){
     
@@ -298,7 +299,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	
 	if(obj.hasFilterLabel("hltVertexmumuFilterJpsiMuon3p5")){
 	  pass_jpsi.push_back(obj);
-	  //  std::cout<<"filtro jpsi="<<obj.pt()<<std::endl;
+	  //std::cout<<"filtro jpsi="<<obj.pt()<<std::endl;
 	}
 	
 	if (obj.hasFilterLabel("hltTripleMuL3PreFiltered222")){
@@ -323,7 +324,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	}
 	if(flag==0){
 	  displaced.push_back(pass_3mu[i]);
-	  //  std::cout<<"il mu displaced e'="<<pass_3mu[i].pt()<<std::endl;
+	  //std::cout<<"il mu displaced e'="<<pass_3mu[i].pt()<<std::endl;
 	}
       }
       
@@ -338,6 +339,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	int flag=0;                 
 	for(pat::TriggerObjectStandAlone obj: displaced){
 	  if(deltaR(obj,*k_ptr)<0.02){
+	    //std::cout<<"deltaR"<<deltaR(obj,*k_ptr)<<std::endl;
 	    flag=1;
 	  }
 	}
@@ -347,7 +349,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	}
 	else{ //ha trovato il mu displaced
     
-	  //  std::cout<<"mu displaced triggerato="<<k_ptr->pt()<<std::endl;
+	  //std::cout<<"mu displaced triggerato="<<k_ptr->pt()<<std::endl;
 	  math::PtEtaPhiMLorentzVector k_p4(
 					    k_ptr->pt(), 
 					    k_ptr->eta(),
@@ -377,7 +379,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	    if(flag==0) continue;
 	    else{
 
-	      //  std::cout<<"dileptons: 1="<<l1_ptr->pt()<<"; 2= "<<l2_ptr->pt()<<std::endl;
+	      //std::cout<<"dileptons: 1="<<l1_ptr->pt()<<"; 2= "<<l2_ptr->pt()<<std::endl;
 	      pat::CompositeCandidate cand;
 	      cand.setP4(ll_prt->p4() + k_p4);
 	      cand.setCharge(ll_prt->charge() + k_ptr->charge());
@@ -434,7 +436,10 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      else weight = -99.;
 	      cand.addUserFloat("weightGen", weight);
 	      
-	      if( !pre_vtx_selection_(cand) ) continue;
+	      if( !pre_vtx_selection_(cand) ) {
+		//std::cout<<"pre vtx selection dies"<<std::endl;
+		continue;
+	      }
 	      
 	      //	      std::cout<<"PRIMA"<<std::endl;
 	      KinVtxFitter fitter(
@@ -443,8 +448,11 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 				  {LEP_SIGMA, LEP_SIGMA, LEP_SIGMA} //some small sigma for the lepton mass
 				  );
 	      //std::cout<<"DOPO"<<std::endl;
-	      if(!fitter.success()) continue; // hardcoded, but do we need otherwise?
-	      cand.setVertex( 
+	      if(!fitter.success()) {
+		//std::cout<<"fitter success dies"<<std::endl;
+		continue; // hardcoded, but do we need otherwise?
+	      }
+		cand.setVertex( 
 			     reco::Candidate::Point( 
 						    fitter.fitted_vtx().x(),
 						    fitter.fitted_vtx().y(),
@@ -565,9 +573,12 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      P_mu.Boost(-jpsi_beta_lab);
 	    
 	      cand.addUserFloat("E_mu_#",P_mu.E());
-	       
-	      if( !post_vtx_selection_(cand) ) continue;        
 	      
+	      //std::cout<<cos_theta_2D(fitter, *beamspot, fit_p4)<<std::endl;
+	      if( !post_vtx_selection_(cand) ) {
+		//std::cout<<"post vtx dies"<<std::endl;
+		continue;        
+	      }
 	      //std::cout<<"EHIIII"<<std::endl;
 
 	      //compute isolation
