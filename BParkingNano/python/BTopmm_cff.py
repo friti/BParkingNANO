@@ -6,6 +6,11 @@ from PhysicsTools.BParkingNano.rjpsi_common_cff import JpsiMuonPairs, BuilderDef
 BTopmmCfg = BuilderDefaultCfg.clone()
 BTopmmCfg.dileptons = cms.InputTag('JpsiMuonPairs')
 BTopmmCfg.leptonTransientTracks = JpsiMuonPairs.transientTracksSrc
+BTopmmCfg.postVtxSelection = cms.string(' && '.join([
+        BuilderDefaultCfg.postVtxSelection.value(),
+        'mass > 4.5',
+        ])
+)
 
 BTopmm = cms.EDProducer(
     'BTopmmBuilder',
