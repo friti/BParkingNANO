@@ -21,6 +21,8 @@ JpsiMuonPairs = cms.EDProducer(
 #         '&& userFloat("sv_chi2") < 998 ' 
         '&& userFloat("sv_prob") > 1.e-5 '
     ),
+    beamSpot              = cms.InputTag("offlineBeamSpot"),
+
 )
 
 BuilderDefaultCfg = cms.PSet(
@@ -68,7 +70,9 @@ TableDefaultVariables = cms.PSet(
     kIdx     = uint('k_idx'),
     minDR    = ufloat('min_dr'),
     maxDR    = ufloat('max_dr'),
-    # fit and vtx info                                                                                                    
+    # fit and vtx info                                                                                                 
+
+    #3 particles vertex
     chi2     = ufloat('sv_chi2'),            
     svprob   = ufloat('sv_prob'),
     l_xy     = ufloat('l_xy'),
@@ -76,20 +80,33 @@ TableDefaultVariables = cms.PSet(
     vtx_x    = ufloat('vtx_x'),
     vtx_y    = ufloat('vtx_y'),
     vtx_z    = ufloat('vtx_z'),
-    vtx_ex   = ufloat('vtx_ex'), ## only saving diagonal elements of the cov matrix                                         
+    vtx_ex   = ufloat('vtx_ex'), ## only saving diagonal elements of the cov matrix      
     vtx_ey   = ufloat('vtx_ey'),
     vtx_ez   = ufloat('vtx_ez'),
-    # Mll                                                                                                                 
-    mll_raw      = Var('userCand("dilepton").mass()', float),
-    mll_llfit    = Var('userCand("dilepton").userFloat("fitted_mass")', float), # this might not work                        
-    mllErr_llfit = Var('userCand("dilepton").userFloat("fitted_massErr")', float), # this might not work                  
-    mll_fullfit  = ufloat('fitted_mll'),
-    # Cos(theta)                                                                        
+    cos2D     = ufloat('cos_theta_2D'),
+
+    #2 particles vertex
+
     jpsi_chi2 = Var('userCand("dilepton").userFloat("sv_chi2")', float),
     jpsi_svprob = Var('userCand("dilepton").userFloat("sv_prob")', float),
+    
+    jpsi_l_xy = Var('userCand("dilepton").userFloat("l_xy")', float),
+    jpsi_l_xy_unc = Var('userCand("dilepton").userFloat("l_xy_unc")', float),
+    jpsi_vtx_x = Var('userCand("dilepton").userFloat("vtx_x")', float),
+    jpsi_vtx_y = Var('userCand("dilepton").userFloat("vtx_y")', float),
+    jpsi_vtx_z = Var('userCand("dilepton").userFloat("vtx_z")', float),
+    jpsi_vtx_ex = Var('userCand("dilepton").userFloat("vtx_ex")', float),
+    jpsi_vtx_ey = Var('userCand("dilepton").userFloat("vtx_ey")', float),
+    jpsi_vtx_ez = Var('userCand("dilepton").userFloat("vtx_ez")', float),
+    jpsi_cos2D = Var('userCand("dilepton").userFloat("cos_theta_2D")', float),
+    
+    
+    # Mll
+    mll_raw      = Var('userCand("dilepton").mass()', float),
+    mll_llfit    = Var('userCand("dilepton").userFloat("fitted_mass")', float), # this might not work             
+    mllErr_llfit = Var('userCand("dilepton").userFloat("fitted_massErr")', float), # this might not work        
+    mll_fullfit  = ufloat('fitted_mll'),
 
-    cos2D     = ufloat('cos_theta_2D'),
-    fit_cos2D = ufloat('fitted_cos_theta_2D'),
     # post-fit momentum                                                                                                   
     fit_mass    = ufloat('fitted_mass'),
     fit_massErr = ufloat('fitted_massErr'),
@@ -105,6 +122,8 @@ TableDefaultVariables = cms.PSet(
     fit_k_pt    = ufloat('fitted_k_pt'),
     fit_k_eta   = ufloat('fitted_k_eta'),
     fit_k_phi   = ufloat('fitted_k_phi'),
+    fit_cos2D = ufloat('fitted_cos_theta_2D'),
+
     l1_iso03    = ufloat('l1_iso03'),
     l1_iso04    = ufloat('l1_iso04'),
     l2_iso03    = ufloat('l2_iso03'),

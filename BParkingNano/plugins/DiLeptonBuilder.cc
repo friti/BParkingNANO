@@ -4,6 +4,7 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
 #include <vector>
 #include <memory>
@@ -33,11 +34,12 @@ public:
     pre_vtx_selection_{cfg.getParameter<std::string>("preVtxSelection")},
     post_vtx_selection_{cfg.getParameter<std::string>("postVtxSelection")},
     src_{consumes<LeptonCollection>( cfg.getParameter<edm::InputTag>("src") )},
-    ttracks_src_{consumes<TransientTrackCollection>( cfg.getParameter<edm::InputTag>("transientTracksSrc") )} {
-       produces<pat::CompositeCandidateCollection>();
-    }
-
-  ~DiLeptonBuilder() override {}
+    ttracks_src_{consumes<TransientTrackCollection>( cfg.getParameter<edm::InputTag>("transientTracksSrc") )},
+    beamspot_{consumes<reco::BeamSpot>( cfg.getParameter<edm::InputTag>("beamSpot") )} {
+      produces<pat::CompositeCandidateCollection>();
+    }							   
+	
+      ~DiLeptonBuilder() override {}
   
   void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
@@ -50,6 +52,8 @@ private:
   const StringCutObjectSelector<pat::CompositeCandidate> post_vtx_selection_; // cut on the di-lepton after the SV fit
   const edm::EDGetTokenT<LeptonCollection> src_;
   const edm::EDGetTokenT<TransientTrackCollection> ttracks_src_;
+  const edm::EDGetTokenT<reco::BeamSpot> beamspot_;  
+
 };
 
 template<typename Lepton>
@@ -61,6 +65,9 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
   
   edm::Handle<TransientTrackCollection> ttracks;
   evt.getByToken(ttracks_src_, ttracks);
+
+  edm::Handle<reco::BeamSpot> beamspot;
+  evt.getByToken(beamspot_, beamspot);  
 
   // output
   std::unique_ptr<pat::CompositeCandidateCollection> ret_value(new pat::CompositeCandidateCollection());
@@ -90,8 +97,12 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
         {l1_ptr->mass(), l2_ptr->mass()},
         {LEP_SIGMA, LEP_SIGMA} //some small sigma for the particle mass
         );
+      
+      if(!fitter.success()) {
+	//std::cout<<"fitter success dies"<<std::endl;
+	continue; // hardcoded, but do we need otherwise?
+      }
 
-      /*
       lepton_pair.setVertex(
 		     reco::Candidate::Point(
 					    fitter.fitted_vtx().x(),
@@ -99,20 +110,33 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
 					    fitter.fitted_vtx().z()
 					    )
 		     );
-      */
+      
       lepton_pair.addUserFloat("sv_chi2", fitter.chi2());
       lepton_pair.addUserFloat("sv_ndof", fitter.dof()); // float??
       lepton_pair.addUserFloat("sv_prob", fitter.prob());
+      
+
       lepton_pair.addUserFloat("fitted_mass", fitter.success() ? fitter.fitted_candidate().mass() : -1);
       lepton_pair.addUserFloat("fitted_massErr", fitter.success() ? sqrt(fitter.fitted_candidate().kinematicParametersError().matrix()(6,6)) : -1);
-      /* lepton_pair.addUserFloat("vtx_x",lepton_pair.vx());
+
+      auto lxy = l_xy(fitter, *beamspot);
+      lepton_pair.addUserFloat("l_xy", lxy.value());
+      lepton_pair.addUserFloat("l_xy_unc", lxy.error());
+	     
+      lepton_pair.addUserFloat("vtx_x",lepton_pair.vx());
       lepton_pair.addUserFloat("vtx_y",lepton_pair.vy());
       lepton_pair.addUserFloat("vtx_z",lepton_pair.vz());
+
       lepton_pair.addUserFloat("vtx_ex",sqrt(fitter.fitted_vtx_uncertainty().cxx()));
       lepton_pair.addUserFloat("vtx_ey",sqrt(fitter.fitted_vtx_uncertainty().cyy()));
       lepton_pair.addUserFloat("vtx_ez",sqrt(fitter.fitted_vtx_uncertainty().czz()));
-      */
+      
      
+      lepton_pair.addUserFloat(
+			       "cos_theta_2D", 
+			       cos_theta_2D(fitter, *beamspot, lepton_pair.p4())
+			       );
+
  // if needed, add here more stuff
 
       // cut on the SV info
