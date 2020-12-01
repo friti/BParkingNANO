@@ -30,27 +30,27 @@
 
 constexpr bool debugGen = false;
 
-class BTopmmBuilder : public edm::global::EDProducer<> {
+class BToTrackmmBuilder : public edm::global::EDProducer<> {
 
   // perhaps we need better structure here (begin run etc)
 public:
   typedef std::vector<reco::TransientTrack> TransientTrackCollection;
   typedef std::vector<reco::GenParticle> GenParticleCollection;
 
-  explicit BTopmmBuilder(const edm::ParameterSet &cfg):
+  explicit BToTrackmmBuilder(const edm::ParameterSet &cfg):
     k_selection_{cfg.getParameter<std::string>("kaonSelection")},
     pre_vtx_selection_{cfg.getParameter<std::string>("preVtxSelection")},
     post_vtx_selection_{cfg.getParameter<std::string>("postVtxSelection")},
+    k_mass{cfg.getParameter<double>("track_mass")},
     dileptons_{consumes<pat::CompositeCandidateCollection>( cfg.getParameter<edm::InputTag>("dileptons") )},
     leptons_ttracks_{consumes<TransientTrackCollection>( cfg.getParameter<edm::InputTag>("leptonTransientTracks") )},
     kaons_{consumes<pat::CompositeCandidateCollection>( cfg.getParameter<edm::InputTag>("kaons") )},
     kaons_ttracks_{consumes<TransientTrackCollection>( cfg.getParameter<edm::InputTag>("kaonsTransientTracks") )},
     isotracksToken_(consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("tracks"))),
     isolostTracksToken_(consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("lostTracks"))),
-
+    
     //GEN
-
-    srcToken_(consumes<GenParticleCollection>(cfg.getParameter<edm::InputTag>("srcGen"))), 
+    srcToken_(consumes<GenParticleCollection>(cfg.getParameter<edm::InputTag>("srcGen"))),
     //TRIGGER
     triggerBits_(consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("bits"))),
     triggerObjects_(consumes<std::vector<pat::TriggerObjectStandAlone>>(cfg.getParameter<edm::InputTag>("objects"))), 
@@ -60,7 +60,7 @@ public:
       produces<pat::CompositeCandidateCollection>();
     }
 
-  ~BTopmmBuilder() override {}
+  ~BToTrackmmBuilder() override {}
   
   void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
@@ -70,6 +70,7 @@ private:
   const StringCutObjectSelector<pat::CompositeCandidate> k_selection_; 
   const StringCutObjectSelector<pat::CompositeCandidate> pre_vtx_selection_; // cut on the di-lepton before the SV fit
   const StringCutObjectSelector<pat::CompositeCandidate> post_vtx_selection_; // cut on the di-lepton after the SV fit
+  const double k_mass;
 
   const edm::EDGetTokenT<pat::CompositeCandidateCollection> dileptons_;
   const edm::EDGetTokenT<TransientTrackCollection> leptons_ttracks_;
@@ -82,6 +83,7 @@ private:
   //GEN
   edm::EDGetTokenT<reco::GenParticleCollection> srcToken_;
 
+
   //TRIGGER                                                              
   const edm::EDGetTokenT<edm::TriggerResults> triggerBits_;                         
   const edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone>> triggerObjects_;
@@ -91,7 +93,7 @@ private:
   const edm::EDGetTokenT<reco::BeamSpot> beamspot_;  
 };
 
-void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const &) const {
+void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const &) const {
 
   //input
   edm::Handle<pat::CompositeCandidateCollection> dileptons;
@@ -115,7 +117,7 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
   edm::Handle<pat::PackedCandidateCollection> iso_lostTracks;
   evt.getByToken(isolostTracksToken_, iso_lostTracks);
 
-//GEN
+  //GEN
   int flag_jpsi_mu = -99. ;
   int flag_psi2s_mu = -99.;
   int flag_chic0_mu = -99.;
@@ -309,7 +311,7 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 					    k_ptr->pt(), 
 					    k_ptr->eta(),
 					    k_ptr->phi(),
-					    PI_MASS
+					    k_mass
 					    );
 	  
 	  for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
@@ -348,7 +350,6 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      cand.addUserFloat("max_dr", dr_info.second);
 	      // TODO add meaningful variables
 
-
 //GEN variables
 	      cand.addUserInt("is_jpsi_mu", flag_jpsi_mu);
 	      cand.addUserInt("is_psi2s_mu", flag_psi2s_mu);
@@ -383,13 +384,14 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      }
 	      else weight = -99.;
 	      cand.addUserFloat("weightGen", weight);
+
 	      
 	      if( !pre_vtx_selection_(cand) ) continue;
 	      
 	      KinVtxFitter fitter(
 				  {leptons_ttracks->at(l1_idx), leptons_ttracks->at(l2_idx), kaons_ttracks->at(k_idx)},
-				  {l1_ptr->mass(), l2_ptr->mass(), PI_MASS},
-				  {LEP_SIGMA, LEP_SIGMA, PI_SIGMA} //some small sigma for the lepton mass
+				  {l1_ptr->mass(), l2_ptr->mass(), k_mass},
+				  {LEP_SIGMA, LEP_SIGMA, K_SIGMA} //some small sigma for the lepton mass
 				  );
 	      if(!fitter.success()) continue; // hardcoded, but do we need otherwise?
 	      cand.setVertex( 
@@ -595,4 +597,6 @@ void BTopmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 }//produce
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(BTopmmBuilder);
+
+DEFINE_FWK_MODULE(BToTrackmmBuilder);
+

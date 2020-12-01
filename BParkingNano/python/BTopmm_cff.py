@@ -8,9 +8,10 @@ BTopmmCfg.dileptons = cms.InputTag('JpsiMuonPairs')
 BTopmmCfg.leptonTransientTracks = JpsiMuonPairs.transientTracksSrc
 
 BTopmm = cms.EDProducer(
-    'BTopmmBuilder',
+    'BToTrackmmBuilder',
     BTopmmCfg,
     srcGen = cms.InputTag("prunedGenParticles"),
+    track_mass            = cms.double(0.139571),
 )
 
 BTopmmTableVariables = TableDefaultVariables.clone()
