@@ -501,6 +501,11 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      cand.addUserFloat("fitted_k_eta" , fitter.daughter_p4(2).eta());
 	      cand.addUserFloat("fitted_k_phi" , fitter.daughter_p4(2).phi());
 	      
+	      const reco::BeamSpot &bm = *beamspot;
+
+	      cand.addUserFloat("beamspot_x", bm.x0());
+	      cand.addUserFloat("beamspot_y", bm.y0());
+	      cand.addUserFloat("beamspot_z", bm.z0());
 	      //mie variabili                                                                                
 	      //conto quanti mu totali aveva l'evento
 	      cand.addUserInt("pass_3mu",pass_3mu.size());                                 

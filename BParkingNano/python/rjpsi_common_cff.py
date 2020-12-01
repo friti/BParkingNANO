@@ -72,6 +72,7 @@ TableDefaultVariables = cms.PSet(
     maxDR    = ufloat('max_dr'),
     # fit and vtx info                                                                      
 
+
     #3 particles vertex
     bodies3_chi2     = ufloat('sv_chi2'),            
     bodies3_svprob   = ufloat('sv_prob'),
@@ -144,6 +145,12 @@ TableDefaultVariables = cms.PSet(
     k_iso04     = ufloat('k_iso04'),
     b_iso03     = ufloat('b_iso03'),
     b_iso04     = ufloat('b_iso04'),
+
+    #beamspot
+    beamspot_x     = ufloat('beamspot_x'),
+    beamspot_y     = ufloat('beamspot_y'),
+    beamspot_z     = ufloat('beamspot_z'),
+
 
     # my variables
     m_miss_sq   = ufloat('m_miss_2'),
