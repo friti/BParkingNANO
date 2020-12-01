@@ -115,9 +115,17 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
       lepton_pair.addUserFloat("sv_ndof", fitter.dof()); // float??
       lepton_pair.addUserFloat("sv_prob", fitter.prob());
       
-
+      auto fit_p4 = fitter.fitted_p4();
       lepton_pair.addUserFloat("fitted_mass", fitter.success() ? fitter.fitted_candidate().mass() : -1);
       lepton_pair.addUserFloat("fitted_massErr", fitter.success() ? sqrt(fitter.fitted_candidate().kinematicParametersError().matrix()(6,6)) : -1);
+
+      lepton_pair.addUserFloat("fitted_pt"  , fit_p4.pt()); 
+      lepton_pair.addUserFloat("fitted_eta" , fit_p4.eta());
+      lepton_pair.addUserFloat("fitted_phi" , fit_p4.phi());
+      lepton_pair.addUserFloat(
+			"fitted_cos_theta_2D", 
+			cos_theta_2D(fitter, *beamspot, fit_p4)
+			);
 
       auto lxy = l_xy(fitter, *beamspot);
       lepton_pair.addUserFloat("l_xy", lxy.value());
@@ -131,12 +139,21 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
       lepton_pair.addUserFloat("vtx_ey",sqrt(fitter.fitted_vtx_uncertainty().cyy()));
       lepton_pair.addUserFloat("vtx_ez",sqrt(fitter.fitted_vtx_uncertainty().czz()));
       
+      lepton_pair.addUserFloat("fitted_l1_pt" , fitter.daughter_p4(0).pt()); 
+      lepton_pair.addUserFloat("fitted_l1_eta", fitter.daughter_p4(0).eta());
+      lepton_pair.addUserFloat("fitted_l1_phi", fitter.daughter_p4(0).phi());
+      lepton_pair.addUserFloat("fitted_l2_pt" , fitter.daughter_p4(1).pt()); 
+      lepton_pair.addUserFloat("fitted_l2_eta", fitter.daughter_p4(1).eta());
+      lepton_pair.addUserFloat("fitted_l2_phi", fitter.daughter_p4(1).phi());
+
+
+      
      
       lepton_pair.addUserFloat(
 			       "cos_theta_2D", 
 			       cos_theta_2D(fitter, *beamspot, lepton_pair.p4())
 			       );
-
+      
  // if needed, add here more stuff
 
       // cut on the SV info

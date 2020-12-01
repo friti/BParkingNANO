@@ -70,59 +70,71 @@ TableDefaultVariables = cms.PSet(
     kIdx     = uint('k_idx'),
     minDR    = ufloat('min_dr'),
     maxDR    = ufloat('max_dr'),
-    # fit and vtx info                                                                                                 
+    # fit and vtx info                                                                      
 
     #3 particles vertex
-    chi2     = ufloat('sv_chi2'),            
-    svprob   = ufloat('sv_prob'),
-    l_xy     = ufloat('l_xy'),
-    l_xy_unc = ufloat('l_xy_unc'),
-    vtx_x    = ufloat('vtx_x'),
-    vtx_y    = ufloat('vtx_y'),
-    vtx_z    = ufloat('vtx_z'),
-    vtx_ex   = ufloat('vtx_ex'), ## only saving diagonal elements of the cov matrix      
-    vtx_ey   = ufloat('vtx_ey'),
-    vtx_ez   = ufloat('vtx_ez'),
-    cos2D     = ufloat('cos_theta_2D'),
+    bodies3_chi2     = ufloat('sv_chi2'),            
+    bodies3_svprob   = ufloat('sv_prob'),
+    bodies3_l_xy     = ufloat('l_xy'),
+    bodies3_l_xy_unc = ufloat('l_xy_unc'),
+    bodies3_vtx_x    = ufloat('vtx_x'),
+    bodies3_vtx_y    = ufloat('vtx_y'),
+    bodies3_vtx_z    = ufloat('vtx_z'),
+    bodies3_vtx_ex   = ufloat('vtx_ex'), ## only saving diagonal elements of the cov matrix      
+    bodies3_vtx_ey   = ufloat('vtx_ey'),
+    bodies3_vtx_ez   = ufloat('vtx_ez'),
+    bodies3_cos2D     = ufloat('cos_theta_2D'),
+
+    # post-fit 3 particles vertex                                                                                          
+    bodies3_fit_mass    = ufloat('fitted_mass'),
+    bodies3_fit_massErr = ufloat('fitted_massErr'),
+    bodies3_fit_pt      = ufloat('fitted_pt'),
+    bodies3_fit_eta     = ufloat('fitted_eta'),
+    bodies3_fit_phi     = ufloat('fitted_phi'),
+    bodies3_fit_l1_pt   = ufloat('fitted_l1_pt'),
+    bodies3_fit_l1_eta  = ufloat('fitted_l1_eta'),
+    bodies3_fit_l1_phi  = ufloat('fitted_l1_phi'),
+    bodies3_fit_l2_pt   = ufloat('fitted_l2_pt'),
+    bodies3_fit_l2_eta  = ufloat('fitted_l2_eta'),
+    bodies3_fit_l2_phi  = ufloat('fitted_l2_phi'),
+    bodies3_fit_k_pt    = ufloat('fitted_k_pt'),
+    bodies3_fit_k_eta   = ufloat('fitted_k_eta'),
+    bodies3_fit_k_phi   = ufloat('fitted_k_phi'),
+    bodies3_fit_cos2D = ufloat('fitted_cos_theta_2D'),
 
     #2 particles vertex
+    jpsivtx_chi2 = Var('userCand("dilepton").userFloat("sv_chi2")', float),
+    jpsivtx_svprob = Var('userCand("dilepton").userFloat("sv_prob")', float),
+    jpsivtx_l_xy = Var('userCand("dilepton").userFloat("l_xy")', float),
+    jpsivtx_l_xy_unc = Var('userCand("dilepton").userFloat("l_xy_unc")', float),
+    jpsivtx_vtx_x = Var('userCand("dilepton").userFloat("vtx_x")', float),
+    jpsivtx_vtx_y = Var('userCand("dilepton").userFloat("vtx_y")', float),
+    jpsivtx_vtx_z = Var('userCand("dilepton").userFloat("vtx_z")', float),
+    jpsivtx_vtx_ex = Var('userCand("dilepton").userFloat("vtx_ex")', float),
+    jpsivtx_vtx_ey = Var('userCand("dilepton").userFloat("vtx_ey")', float),
+    jpsivtx_vtx_ez = Var('userCand("dilepton").userFloat("vtx_ez")', float),
+    jpsivtx_cos2D = Var('userCand("dilepton").userFloat("cos_theta_2D")', float),
+    
+    #post fit 2 particles vertex
+    jpsivtx_fit_mass    = Var('userCand("dilepton").userFloat("fitted_mass")', float), 
+    jpsivtx_fit_massErr = Var('userCand("dilepton").userFloat("fitted_massErr")', float), 
+    jpsivtx_fit_pt    = Var('userCand("dilepton").userFloat("fitted_pt")', float), 
+    jpsivtx_fit_eta    = Var('userCand("dilepton").userFloat("fitted_eta")', float), 
+    jpsivtx_fit_phi   = Var('userCand("dilepton").userFloat("fitted_phi")', float), 
+    jpsivtx_fit_l1_pt   = Var('userCand("dilepton").userFloat("fitted_l1_pt")', float), 
+    jpsivtx_fit_l1_eta   = Var('userCand("dilepton").userFloat("fitted_l1_eta")', float), 
+    jpsivtx_fit_l1_phi   = Var('userCand("dilepton").userFloat("fitted_l1_phi")', float), 
+    jpsivtx_fit_l2_pt   = Var('userCand("dilepton").userFloat("fitted_l2_pt")', float), 
+    jpsivtx_fit_l2_eta   = Var('userCand("dilepton").userFloat("fitted_l2_eta")', float), 
+    jpsivtx_fit_l2_phi   = Var('userCand("dilepton").userFloat("fitted_l2_phi")', float), 
+    jpsivtx_fit_cos2D = Var('userCand("dilepton").userFloat("fitted_cos_theta_2D")', float),
+    
 
-    jpsi_chi2 = Var('userCand("dilepton").userFloat("sv_chi2")', float),
-    jpsi_svprob = Var('userCand("dilepton").userFloat("sv_prob")', float),
-    
-    jpsi_l_xy = Var('userCand("dilepton").userFloat("l_xy")', float),
-    jpsi_l_xy_unc = Var('userCand("dilepton").userFloat("l_xy_unc")', float),
-    jpsi_vtx_x = Var('userCand("dilepton").userFloat("vtx_x")', float),
-    jpsi_vtx_y = Var('userCand("dilepton").userFloat("vtx_y")', float),
-    jpsi_vtx_z = Var('userCand("dilepton").userFloat("vtx_z")', float),
-    jpsi_vtx_ex = Var('userCand("dilepton").userFloat("vtx_ex")', float),
-    jpsi_vtx_ey = Var('userCand("dilepton").userFloat("vtx_ey")', float),
-    jpsi_vtx_ez = Var('userCand("dilepton").userFloat("vtx_ez")', float),
-    jpsi_cos2D = Var('userCand("dilepton").userFloat("cos_theta_2D")', float),
-    
     
     # Mll
     mll_raw      = Var('userCand("dilepton").mass()', float),
-    mll_llfit    = Var('userCand("dilepton").userFloat("fitted_mass")', float), # this might not work             
-    mllErr_llfit = Var('userCand("dilepton").userFloat("fitted_massErr")', float), # this might not work        
     mll_fullfit  = ufloat('fitted_mll'),
 
-    # post-fit momentum                                                                                                   
-    fit_mass    = ufloat('fitted_mass'),
-    fit_massErr = ufloat('fitted_massErr'),
-    fit_pt      = ufloat('fitted_pt'),
-    fit_eta     = ufloat('fitted_eta'),
-    fit_phi     = ufloat('fitted_phi'),
-    fit_l1_pt   = ufloat('fitted_l1_pt'),
-    fit_l1_eta  = ufloat('fitted_l1_eta'),
-    fit_l1_phi  = ufloat('fitted_l1_phi'),
-    fit_l2_pt   = ufloat('fitted_l2_pt'),
-    fit_l2_eta  = ufloat('fitted_l2_eta'),
-    fit_l2_phi  = ufloat('fitted_l2_phi'),
-    fit_k_pt    = ufloat('fitted_k_pt'),
-    fit_k_eta   = ufloat('fitted_k_eta'),
-    fit_k_phi   = ufloat('fitted_k_phi'),
-    fit_cos2D = ufloat('fitted_cos_theta_2D'),
 
     l1_iso03    = ufloat('l1_iso03'),
     l1_iso04    = ufloat('l1_iso04'),
