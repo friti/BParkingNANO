@@ -9,7 +9,6 @@ JpsiMuonPairs = cms.EDProducer(
     lep1Selection      = cms.string('pt > 2.5'),
     lep2Selection      = cms.string(''),
     preVtxSelection    = cms.string(' && '.join([
-#         'abs(userCand("l1").dz - userCand("l2").dz) <= 0.4 ',
         'abs(userCand("l1").bestTrack.dz - userCand("l2").bestTrack.dz) <= 0.4 ',
         'mass() > 2',
         'mass() < 4',
@@ -40,9 +39,6 @@ BuilderDefaultCfg = cms.PSet(
         'userInt("sv_OK") == 1',
         'userFloat("sv_prob") > 1e-8',
         'userFloat("fitted_cos_theta_2D") >= 0',
-#         'userFloat("fitted_mass") > 4.5',
-#         'userFloat("fitted_mass") < 8.',
-#         'mass > 4.5',
         'mass < 8.',
         ])
     ),
@@ -67,13 +63,12 @@ TableDefaultVariables = cms.PSet(
     #nome branch= nome variabile del .cc
     l1Idx    = uint('l1_idx'),
     l2Idx    = uint('l2_idx'),
-    kIdx     = uint('k_idx'),
+
     minDR    = ufloat('min_dr'),
     maxDR    = ufloat('max_dr'),
     # fit and vtx info                                                                      
 
-
-    #3 particles vertex
+   #3 particles vertex
     bodies3_chi2     = ufloat('sv_chi2'),            
     bodies3_svprob   = ufloat('sv_prob'),
     bodies3_l_xy     = ufloat('l_xy'),
@@ -98,9 +93,6 @@ TableDefaultVariables = cms.PSet(
     bodies3_fit_l2_pt   = ufloat('fitted_l2_pt'),
     bodies3_fit_l2_eta  = ufloat('fitted_l2_eta'),
     bodies3_fit_l2_phi  = ufloat('fitted_l2_phi'),
-    bodies3_fit_k_pt    = ufloat('fitted_k_pt'),
-    bodies3_fit_k_eta   = ufloat('fitted_k_eta'),
-    bodies3_fit_k_phi   = ufloat('fitted_k_phi'),
     bodies3_fit_cos2D = ufloat('fitted_cos_theta_2D'),
 
     #2 particles vertex
@@ -129,20 +121,15 @@ TableDefaultVariables = cms.PSet(
     jpsivtx_fit_l2_eta   = Var('userCand("dilepton").userFloat("fitted_l2_eta")', float), 
     jpsivtx_fit_l2_phi   = Var('userCand("dilepton").userFloat("fitted_l2_phi")', float), 
     jpsivtx_fit_cos2D = Var('userCand("dilepton").userFloat("fitted_cos_theta_2D")', float),
-    
-
-    
+        
     # Mll
     mll_raw      = Var('userCand("dilepton").mass()', float),
     mll_fullfit  = ufloat('fitted_mll'),
-
 
     l1_iso03    = ufloat('l1_iso03'),
     l1_iso04    = ufloat('l1_iso04'),
     l2_iso03    = ufloat('l2_iso03'),
     l2_iso04    = ufloat('l2_iso04'),
-    k_iso03     = ufloat('k_iso03'),
-    k_iso04     = ufloat('k_iso04'),
     b_iso03     = ufloat('b_iso03'),
     b_iso04     = ufloat('b_iso04'),
 
@@ -159,10 +146,8 @@ TableDefaultVariables = cms.PSet(
     pt_miss_vec = ufloat('pt_miss_vec'),
     pt_var      = ufloat('pt_var'),
     DR          = ufloat('DR'),
-    E_mu_star   = ufloat('E_mu_star'),
-    E_mu_canc   = ufloat('E_mu_#'),
     m_jpsi      = ufloat('m_jpsi'),
-
+    
     # Gen Variables
     is_jpsi_mu   = uint("is_jpsi_mu"),
     is_psi2s_mu  = uint("is_psi2s_mu"),
@@ -177,4 +162,15 @@ TableDefaultVariables = cms.PSet(
     is_jpsi_hc   = uint("is_jpsi_hc"),
     is_error     = uint("is_error"),
     weightGen    = ufloat("weightGen"),
+)
+
+Final3PartTableVariables = TableDefaultVariables.clone(
+    kIdx     = uint('k_idx'),
+    bodies3_fit_k_pt    = ufloat('fitted_k_pt'),
+    bodies3_fit_k_eta   = ufloat('fitted_k_eta'),
+    bodies3_fit_k_phi   = ufloat('fitted_k_phi'),
+    k_iso03     = ufloat('k_iso03'),
+    k_iso04     = ufloat('k_iso04'),
+    E_mu_star   = ufloat('E_mu_star'),
+    E_mu_canc   = ufloat('E_mu_#'),
 )

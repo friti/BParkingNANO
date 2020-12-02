@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from PhysicsTools.NanoAOD.common_cff import Var, CandVars
 from PhysicsTools.BParkingNano.common_cff import BParkCandVars, ufloat, uint, ubool
-from PhysicsTools.BParkingNano.rjpsi_common_cff import JpsiMuonPairs, BuilderDefaultCfg, TableDefaultVariables, TableDefault
+from PhysicsTools.BParkingNano.rjpsi_common_cff import JpsiMuonPairs, BuilderDefaultCfg, TableDefaultVariables, TableDefault, Final3PartTableVariables
 
 BTopmmCfg = BuilderDefaultCfg.clone()
 BTopmmCfg.dileptons = cms.InputTag('JpsiMuonPairs')
@@ -19,7 +19,7 @@ BTopmm = cms.EDProducer(
     track_mass            = cms.double(0.139571),
 )
 
-BTopmmTableVariables = TableDefaultVariables.clone()
+BTopmmTableVariables = Final3PartTableVariables.clone()
 
 BTopmmTable = TableDefault.clone()
 BTopmmTable.src       = cms.InputTag("BTopmm")

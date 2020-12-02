@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 
 options = VarParsing('python')
 
-options.register('isMC', True,
+options.register('isMC', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Run this on real data"
@@ -49,8 +49,8 @@ if not options.inputFiles:
     options.inputFiles = ['root://cms-xrd-global.cern.ch///store/data/Run2018A/Charmonium/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/08F41CB9-8F1F-D44F-A5FC-D17E38328C4C.root'] if not options.isMC else \
                          ['file:/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_9.root']                         
 
-from glob import glob
-options.inputFiles = ['file:'+ifile for ifile in glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_*.root')]
+#from glob import glob
+#options.inputFiles = ['file:'+ifile for ifile in glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_*.root')]
 
 #file:02F13381-1D94-CC43-948A-2EFFB8572949.root']
 #['root://cms-xrd-global.cern.ch//store/mc/RunIISummer19UL18MiniAOD/BcToJPsiTauNu_TuneCP5_13TeV-bcvegpy2-pythia8-evtgen/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1_ext1-v2/100000/02F13381-1D94-CC43-948A-2EFFB8572949.root']
@@ -141,6 +141,7 @@ process = nanoAOD_customizeTrackFilteredBPark(process)
 process = nanoAOD_customizeBTommm(process)
 process = nanoAOD_customizeBTopmm(process) #Bc-> JpsiPi -> mu mu pi
 process = nanoAOD_customizeBTokmm(process) 
+process = nanoAOD_customizeBTo2mu3pi(process) 
 process = nanoAOD_customizeTriggerBitsBPark(process)
 
 # Disable implicit track selection based on the proximity to a BPark trigger muon 
@@ -153,6 +154,7 @@ tracksBPark.trkPtCut = cms.double(2.) # adjust track pt
 process.nanoAOD_mmm_step = cms.Path(process.nanoSequence + process.nanoBmmmSequence + CountBTommm )
 process.nanoAOD_pmm_step = cms.Path(process.nanoSequence + process.nanoBpmmSequence + CountBTopmm )
 process.nanoAOD_kmm_step = cms.Path(process.nanoSequence + process.nanoBkmmSequence + CountBTokmm )
+process.nanoAOD_2mu3pi_step = cms.Path(process.nanoSequence + process.nanoB2mu3piSequence + CountBTo2mu3pi )
 
 # customisation of the process.
 if options.isMC:
@@ -168,6 +170,7 @@ process.schedule = cms.Schedule(
     process.nanoAOD_mmm_step,
     process.nanoAOD_pmm_step,
     process.nanoAOD_kmm_step,
+    process.nanoAOD_2mu3pi_step,
     process.endjob_step, 
     process.NANOAODoutput_step
 )
@@ -189,6 +192,7 @@ process.NANOAODoutput.SelectEvents = cms.untracked.PSet(
         'nanoAOD_mmm_step', 
         'nanoAOD_pmm_step',
         'nanoAOD_kmm_step',
+        'nanoAOD_2mu3pi_step',
     )
 )
 

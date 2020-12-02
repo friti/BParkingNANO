@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from PhysicsTools.NanoAOD.common_cff import Var, CandVars
 from PhysicsTools.BParkingNano.common_cff import BParkCandVars, ufloat, uint, ubool
-from PhysicsTools.BParkingNano.rjpsi_common_cff import JpsiMuonPairs, BuilderDefaultCfg, TableDefaultVariables, TableDefault
+from PhysicsTools.BParkingNano.rjpsi_common_cff import JpsiMuonPairs, BuilderDefaultCfg, TableDefaultVariables, TableDefault,Final3PartTableVariables
 
 BTommmCfg = BuilderDefaultCfg.clone()
 BTommmCfg.dileptons             = cms.InputTag('JpsiMuonPairs')
@@ -15,7 +15,7 @@ BTommm = cms.EDProducer(
     srcGen = cms.InputTag("prunedGenParticles"),
 )
 
-BTommmTableVariables = TableDefaultVariables.clone()
+BTommmTableVariables = Final3PartTableVariables.clone()
 
 BTommmTable = TableDefault.clone()
 BTommmTable.src       = cms.InputTag("BTommm")
