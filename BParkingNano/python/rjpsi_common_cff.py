@@ -42,7 +42,7 @@ BuilderDefaultCfg = cms.PSet(
         'userFloat("fitted_cos_theta_2D") >= 0',
 #         'userFloat("fitted_mass") > 4.5',
 #         'userFloat("fitted_mass") < 8.',
-        'mass > 4.5',
+#         'mass > 4.5',
         'mass < 8.',
         ])
     ),
