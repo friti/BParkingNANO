@@ -34,7 +34,7 @@ options.register('skip', 0,
     "skip first N events"
 )
 
-options.setDefault('maxEvents',10000)
+options.setDefault('maxEvents',5000)
 options.setDefault('tag', '10215')
 options.parseArguments()
 
@@ -48,6 +48,11 @@ outputFileFEVT = cms.untracked.string('_'.join(['BParkFullEvt', extension[option
 if not options.inputFiles:
     options.inputFiles = ['root://cms-xrd-global.cern.ch//store/data/Run2018D/Charmonium/MINIAOD/12Nov2019_UL2018-v1/00000/00AC5CFC-5390-F947-911B-2074A7DFF23D.root'] if not options.isMC else \
                          ['file:/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_PMX_HLT_RECO_MINI_28oct20_v5/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18MiniAOD_1000.root']                         
+
+#file:02F13381-1D94-CC43-948A-2EFFB8572949.root']
+#['root://cms-xrd-global.cern.ch//store/mc/RunIISummer19UL18MiniAOD/BcToJPsiTauNu_TuneCP5_13TeV-bcvegpy2-pythia8-evtgen/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1_ext1-v2/100000/02F13381-1D94-CC43-948A-2EFFB8572949.root']
+
+#
 
 annotation = '%s nevts:%d' % (outputFileNANO, options.maxEvents)
 
