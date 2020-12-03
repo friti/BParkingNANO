@@ -188,13 +188,7 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	    }
       
 	    std::sort(final_daus.begin(), final_daus.end());  //sort the pdgIds of the daughters
-	    /*
-	    for(unsigned int item=0; item< final_daus.size(); item ++){
-	      if(debugGen) std::cout<<final_daus[item]<<std::endl;
-	      if(item == final_daus.size() -1) if(debugGen) std::cout<<" "<<std::endl;
-	    }
-	    */
-
+	    
 	    flag_jpsi_mu = 0;
 	    flag_psi2s_mu = 0;
 	    flag_chic0_mu = 0;
@@ -265,7 +259,6 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
   unsigned int index2 = names.triggerIndex("HLT_DoubleMu4_JpsiTrk_Displaced_v15");
   bool pass_hlt;
   if(index==triggerBits->size() && index2==triggerBits->size()){
-    //std::cout<<"Non ha HLT path giusto"<<std::endl;
     evt.put(std::move(ret_val));
   }                                                                               
   else{
@@ -278,7 +271,6 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
     std::vector<pat::TriggerObjectStandAlone> pass_jpsi;
     std::vector<pat::TriggerObjectStandAlone> pass_trk;
     if(pass_hlt){
-      //      std::cout<<"entra in pass_hlt"<<std::endl;
       for (pat::TriggerObjectStandAlone obj : *triggerObjects){
 	obj.unpackFilterLabels(evt, *triggerBits);
 	obj.unpackPathNames(names);
@@ -305,10 +297,11 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	for(size_t pi1_idx = 0; pi1_idx < kaons->size(); ++pi1_idx) {
 	  edm::Ptr<pat::CompositeCandidate> pi1_ptr(kaons, pi1_idx);
 	  if( !k_selection_(*pi1_ptr) ) continue;
-
-	  if ( !pi1_ptr->bestTrack() || fabs(pi1_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi1_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
-
-	  //	  std::cout<<"Here pions"<<pi1_ptr->bestTrack()->dz();
+	  //dz requirement
+	  if ( fabs(kaons_ttracks->at(pi1_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi1_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+	  //dR requirement
+	  if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
+	  if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
 
 	  //matching online-offline della trk
 	  for(pat::TriggerObjectStandAlone obj: pass_trk){
@@ -329,8 +322,11 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	      edm::Ptr<pat::CompositeCandidate> pi2_ptr(kaons, pi2_idx);
 	      if( !k_selection_(*pi2_ptr) ) continue;
 	      if(pi2_idx == pi1_idx) continue;
-
-	      if ( !pi2_ptr->bestTrack() || fabs(pi2_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi2_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+	      // dz between track and leptons
+	      if ( fabs(kaons_ttracks->at(pi2_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi2_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+	      //DR between tracks and leptons
+	      if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
+	      if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
 
 	      math::PtEtaPhiMLorentzVector pi2_p4(
 						  pi2_ptr->pt(), 
@@ -342,7 +338,12 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		edm::Ptr<pat::CompositeCandidate> pi3_ptr(kaons, pi3_idx);
 		if( !k_selection_(*pi3_ptr) ) continue;
 		if(pi3_idx == pi1_idx or pi3_idx == pi2_idx) continue;
-		if ( !pi3_ptr->bestTrack() || fabs(pi3_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi3_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+		//dz requirement
+		if ( fabs(kaons_ttracks->at(pi3_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi3_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+		//DR requirements
+		if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
+		if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
+
 		
 		math::PtEtaPhiMLorentzVector pi3_p4(
 						    pi3_ptr->pt(), 
@@ -381,6 +382,7 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		  auto dr_info = min_max_dr({l1_ptr, l2_ptr, pi1_ptr, pi2_ptr, pi3_ptr});
 		  cand.addUserFloat("min_dr", dr_info.first);
 		  cand.addUserFloat("max_dr", dr_info.second);
+
 		  
 		  //GEN variables
 		  cand.addUserInt("is_jpsi_mu", flag_jpsi_mu);
@@ -419,14 +421,15 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		  
 		  
 		  if( !pre_vtx_selection_(cand) ) continue;
-
-		  		  
+		  
+		  
 		  KinVtxFitter fitter(
 				      {leptons_ttracks->at(l1_idx), leptons_ttracks->at(l2_idx), kaons_ttracks->at(pi1_idx), kaons_ttracks->at(pi2_idx), kaons_ttracks->at(pi3_idx) },
 				      {l1_ptr->mass(), l2_ptr->mass(), PI_MASS, PI_MASS, PI_MASS},
 				      {LEP_SIGMA, LEP_SIGMA, PI_SIGMA, PI_SIGMA, PI_SIGMA} //some small sigma for the lepton mass
 				      );
 		  if(!fitter.success()) continue; // hardcoded, but do we need otherwise?
+
 		  cand.setVertex( 
 				 reco::Candidate::Point( 
 							fitter.fitted_vtx().x(),
@@ -581,9 +584,9 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		  float pi3_iso04  = 0;
 		  float b_iso03  = 0;
 		  float b_iso04  = 0;
-	      
+		  
 		  for( unsigned int iTrk=0; iTrk<totalTracks; ++iTrk ) {
-		
+		    
 		    const pat::PackedCandidate & trk = (iTrk < nTracks) ? (*iso_tracks)[iTrk] : (*iso_lostTracks)[iTrk-nTracks];
 		    // define selections for iso tracks (pT, eta, ...)
 		    if( !isotrk_selection_(trk) ) continue;
@@ -591,11 +594,10 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		    // only consider tracks originating close to the three bodies
 		    if ( !l1_ptr->bestTrack() || fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
 		    if ( !l2_ptr->bestTrack() || fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		    if ( !pi1_ptr ->bestTrack() || fabs(trk.dz() - pi1_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		    if ( !pi2_ptr ->bestTrack() || fabs(trk.dz() - pi2_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		    if ( !pi3_ptr ->bestTrack() || fabs(trk.dz() - pi3_ptr->bestTrack()->dz()) > 0.4 ) continue;
+		    if ( fabs(trk.dz() - kaons_ttracks->at(pi1_idx).track().dz()) > 0.4 ) continue;
+		    if ( fabs(trk.dz() - kaons_ttracks->at(pi2_idx).track().dz()) > 0.4 ) continue;
+		    if (  fabs(trk.dz() - kaons_ttracks->at(pi3_idx).track().dz()) > 0.4 ) continue;
 		    
-		    std::cout<<pi1_ptr->bestTrack()->dz()<<std::endl;
 		    if(track_to_lepton_match(pi1_ptr, iso_tracks.id(), iTrk)  )  continue;
 		    if(track_to_lepton_match(pi2_ptr, iso_tracks.id(), iTrk)  )  continue;
 		    if(track_to_lepton_match(pi3_ptr, iso_tracks.id(), iTrk)  )  continue;
@@ -636,7 +638,7 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		      b_iso04 += trk.pt();
 		      if (dr_to_b < 0.3) b_iso03 += trk.pt();
 		    }
-		  }
+		    }
 		  cand.addUserFloat("l1_iso03", l1_iso03);
 		  cand.addUserFloat("l1_iso04", l1_iso04);
 		  cand.addUserFloat("l2_iso03", l2_iso03);
@@ -666,8 +668,8 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	cand.addUserInt("n_pi3_used", std::count(used_pi3_id.begin(),used_pi3_id.end(),cand.userInt("pi3_idx")));
 	cand.addUserInt("n_l1_used", std::count(used_lep1_id.begin(),used_lep1_id.end(),cand.userInt("l1_idx"))+std::count(used_lep2_id.begin(),used_lep2_id.end(),cand.userInt("l1_idx")));
 	cand.addUserInt("n_l2_used", std::count(used_lep1_id.begin(),used_lep1_id.end(),cand.userInt("l2_idx"))+std::count(used_lep2_id.begin(),used_lep2_id.end(),cand.userInt("l2_idx")));
-	}
-    }//pass_hlt
+	} 
+	}//pass_hlt
     evt.put(std::move(ret_val));
   }//index ok
 }//produce

@@ -298,8 +298,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
       for(size_t k_idx = 0; k_idx < kaons->size(); ++k_idx) {
 	edm::Ptr<pat::CompositeCandidate> k_ptr(kaons, k_idx);
 	if( !k_selection_(*k_ptr) ) continue;
-	//	std::cout<<"Dz 1"<<k_ptr ->bestTrack()->dz()<<std::endl;
-	
+
 	//matching online-offline della trk
 	int flag = 0;
 	for(pat::TriggerObjectStandAlone obj: pass_trk){
@@ -543,8 +542,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 		// only consider tracks originating close to the three bodies
 		if ( !l1_ptr->bestTrack() || fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
 		if ( !l2_ptr->bestTrack() || fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;
-		if ( !k_ptr ->bestTrack() || fabs(trk.dz() - k_ptr ->bestTrack()->dz()) > 0.4 ) continue;
-
+		if ( fabs(trk.dz() - kaons_ttracks->at(k_idx).track().dz()) > 0.4 ) continue;
 		// check if the track is the kaon
 		if (k_ptr->userCand("cand") ==  edm::Ptr<reco::Candidate> ( iso_tracks, iTrk ) ) continue;
 		// check if the track is one of the two leptons
