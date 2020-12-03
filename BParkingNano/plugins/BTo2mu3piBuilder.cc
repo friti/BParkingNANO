@@ -41,7 +41,7 @@ public:
     k_selection_{cfg.getParameter<std::string>("kaonSelection")},
     pre_vtx_selection_{cfg.getParameter<std::string>("preVtxSelection")},
     post_vtx_selection_{cfg.getParameter<std::string>("postVtxSelection")},
-    //    k_mass{cfg.getParameter<double>("track_mass")},
+    dz_value{cfg.getParameter<double>("dz_value")},
     dileptons_{consumes<pat::CompositeCandidateCollection>( cfg.getParameter<edm::InputTag>("dileptons") )},
     leptons_ttracks_{consumes<TransientTrackCollection>( cfg.getParameter<edm::InputTag>("leptonTransientTracks") )},
     kaons_{consumes<pat::CompositeCandidateCollection>( cfg.getParameter<edm::InputTag>("kaons") )},
@@ -70,7 +70,7 @@ private:
   const StringCutObjectSelector<pat::CompositeCandidate> k_selection_; 
   const StringCutObjectSelector<pat::CompositeCandidate> pre_vtx_selection_; // cut on the di-lepton before the SV fit
   const StringCutObjectSelector<pat::CompositeCandidate> post_vtx_selection_; // cut on the di-lepton after the SV fit
-  //  const double k_mass;
+  const double dz_value;
 
   const edm::EDGetTokenT<pat::CompositeCandidateCollection> dileptons_;
   const edm::EDGetTokenT<TransientTrackCollection> leptons_ttracks_;
@@ -265,7 +265,7 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
   unsigned int index2 = names.triggerIndex("HLT_DoubleMu4_JpsiTrk_Displaced_v15");
   bool pass_hlt;
   if(index==triggerBits->size() && index2==triggerBits->size()){
-    //    std::cout<<"Non ha HLT path giusto"<<std::endl;
+    //std::cout<<"Non ha HLT path giusto"<<std::endl;
     evt.put(std::move(ret_val));
   }                                                                               
   else{
@@ -278,12 +278,11 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
     std::vector<pat::TriggerObjectStandAlone> pass_jpsi;
     std::vector<pat::TriggerObjectStandAlone> pass_trk;
     if(pass_hlt){
-      //std::cout<<"entra in pass_hlt"<<std::endl;
+      //      std::cout<<"entra in pass_hlt"<<std::endl;
       for (pat::TriggerObjectStandAlone obj : *triggerObjects){
 	obj.unpackFilterLabels(evt, *triggerBits);
 	obj.unpackPathNames(names);
 	
-	//std::cout<<names<<std::endl;
 	if(obj.hasFilterLabel("hltDisplacedmumuFilterDoubleMu4Jpsi")) {
 	  pass_jpsi.push_back(obj);
 	}
@@ -294,65 +293,64 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
       }
    
 
-      //loop on trks
-
-
-      int flag = 0;
-      for(size_t k_idx = 0; k_idx < kaons->size(); ++k_idx) {
-	edm::Ptr<pat::CompositeCandidate> k_ptr(kaons, k_idx);
-	if( !k_selection_(*k_ptr) ) continue;
-
-	//matching online-offline della trk
-	for(pat::TriggerObjectStandAlone obj: pass_trk){
-	  if(deltaR(obj,*k_ptr)<0.02) flag=1;
-	}    
+      //loop on jpsi muons (I need it here because I need dz condition on tracks)
+      for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
+	edm::Ptr<pat::CompositeCandidate> ll_prt(dileptons, ll_idx);
+	edm::Ptr<reco::Candidate> l1_ptr = ll_prt->userCand("l1");
+	edm::Ptr<reco::Candidate> l2_ptr = ll_prt->userCand("l2");
+	int l1_idx = ll_prt->userInt("l1_idx");
+	int l2_idx = ll_prt->userInt("l2_idx");
 	
-      }// first loop
-      //if one of the tracks match with the trigger, look for the candidate
-      if(flag == 1){ 
-	//3 loops on tracks: looking for 3 pions
+	int flag = 0;
 	for(size_t pi1_idx = 0; pi1_idx < kaons->size(); ++pi1_idx) {
 	  edm::Ptr<pat::CompositeCandidate> pi1_ptr(kaons, pi1_idx);
 	  if( !k_selection_(*pi1_ptr) ) continue;
-	
-	  math::PtEtaPhiMLorentzVector pi1_p4(
-						  pi1_ptr->pt(), 
-						  pi1_ptr->eta(),
-						  pi1_ptr->phi(),
-						  PI_MASS
-						  );
-	
-	  for(size_t pi2_idx = 0; pi2_idx < kaons->size(); ++pi2_idx) {
-	    edm::Ptr<pat::CompositeCandidate> pi2_ptr(kaons, pi2_idx);
-	    if( !k_selection_(*pi2_ptr) ) continue;
-	    if(pi2_idx == pi1_idx) continue;
-	    math::PtEtaPhiMLorentzVector pi2_p4(
-					      pi2_ptr->pt(), 
-					      pi2_ptr->eta(),
-					      pi2_ptr->phi(),
-					      PI_MASS
-						);
-	    for(size_t pi3_idx = 0; pi3_idx < kaons->size(); ++pi3_idx) {
-	      edm::Ptr<pat::CompositeCandidate> pi3_ptr(kaons, pi3_idx);
-	      if( !k_selection_(*pi3_ptr) ) continue;
-	      if(pi3_idx == pi1_idx or pi3_idx == pi2_idx) continue;
-	    
-	      math::PtEtaPhiMLorentzVector pi3_p4(
-						  pi3_ptr->pt(), 
-						  pi3_ptr->eta(),
-						  pi3_ptr->phi(),
-						  PI_MASS
-						  );
 
+	  if ( !pi1_ptr->bestTrack() || fabs(pi1_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi1_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+
+	  //	  std::cout<<"Here pions"<<pi1_ptr->bestTrack()->dz();
+
+	  //matching online-offline della trk
+	  for(pat::TriggerObjectStandAlone obj: pass_trk){
+	    if(deltaR(obj,*pi1_ptr)<0.02) flag=1;
+	  }    
 	  
-	      for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
-		edm::Ptr<pat::CompositeCandidate> ll_prt(dileptons, ll_idx);
-		edm::Ptr<reco::Candidate> l1_ptr = ll_prt->userCand("l1");
-		edm::Ptr<reco::Candidate> l2_ptr = ll_prt->userCand("l2");
-		int l1_idx = ll_prt->userInt("l1_idx");
-		int l2_idx = ll_prt->userInt("l2_idx");
+	  if(flag == 1){ 
+
+	
+	    math::PtEtaPhiMLorentzVector pi1_p4(
+						pi1_ptr->pt(), 
+						pi1_ptr->eta(),
+						pi1_ptr->phi(),
+						PI_MASS
+						);
 	    
-	    
+	    for(size_t pi2_idx = 0; pi2_idx < kaons->size(); ++pi2_idx) {
+	      edm::Ptr<pat::CompositeCandidate> pi2_ptr(kaons, pi2_idx);
+	      if( !k_selection_(*pi2_ptr) ) continue;
+	      if(pi2_idx == pi1_idx) continue;
+
+	      if ( !pi2_ptr->bestTrack() || fabs(pi2_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi2_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+
+	      math::PtEtaPhiMLorentzVector pi2_p4(
+						  pi2_ptr->pt(), 
+						  pi2_ptr->eta(),
+						  pi2_ptr->phi(),
+						  PI_MASS
+						  );
+	      for(size_t pi3_idx = 0; pi3_idx < kaons->size(); ++pi3_idx) {
+		edm::Ptr<pat::CompositeCandidate> pi3_ptr(kaons, pi3_idx);
+		if( !k_selection_(*pi3_ptr) ) continue;
+		if(pi3_idx == pi1_idx or pi3_idx == pi2_idx) continue;
+		if ( !pi3_ptr->bestTrack() || fabs(pi3_ptr->bestTrack()->dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(pi3_ptr->bestTrack()->dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+		
+		math::PtEtaPhiMLorentzVector pi3_p4(
+						    pi3_ptr->pt(), 
+						    pi3_ptr->eta(),
+						    pi3_ptr->phi(),
+						    PI_MASS
+						    );
+		
 		//matching online- offline di jpsi
 		flag = 0;
 		for(pat::TriggerObjectStandAlone obj: pass_jpsi){
@@ -596,8 +594,8 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		    if ( !pi1_ptr ->bestTrack() || fabs(trk.dz() - pi1_ptr->bestTrack()->dz()) > 0.4 ) continue;
 		    if ( !pi2_ptr ->bestTrack() || fabs(trk.dz() - pi2_ptr->bestTrack()->dz()) > 0.4 ) continue;
 		    if ( !pi3_ptr ->bestTrack() || fabs(trk.dz() - pi3_ptr->bestTrack()->dz()) > 0.4 ) continue;
-
-
+		    
+		    std::cout<<pi1_ptr->bestTrack()->dz()<<std::endl;
 		    if(track_to_lepton_match(pi1_ptr, iso_tracks.id(), iTrk)  )  continue;
 		    if(track_to_lepton_match(pi2_ptr, iso_tracks.id(), iTrk)  )  continue;
 		    if(track_to_lepton_match(pi3_ptr, iso_tracks.id(), iTrk)  )  continue;
@@ -654,13 +652,13 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 
 		  ret_val->push_back(cand);
 		}//trigger dileptons
-	      } // for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
+	      } // loop pion3
 
-	    } //for pion3
-	  } // for pion2
-	} // for pion1
+	    } //loop p2
+	  } // track trigger
+	} // loop p1
 
-      }// 1 track match the trigger
+      }// loop muons from jpsi
 
       for (auto & cand: *ret_val){
 	cand.addUserInt("n_pi1_used", std::count(used_pi1_id.begin(),used_pi1_id.end(),cand.userInt("pi1_idx")));

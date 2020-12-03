@@ -298,6 +298,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
       for(size_t k_idx = 0; k_idx < kaons->size(); ++k_idx) {
 	edm::Ptr<pat::CompositeCandidate> k_ptr(kaons, k_idx);
 	if( !k_selection_(*k_ptr) ) continue;
+	//	std::cout<<"Dz 1"<<k_ptr ->bestTrack()->dz()<<std::endl;
 	
 	//matching online-offline della trk
 	int flag = 0;
@@ -331,6 +332,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 	    }
 	    if(flag==0) continue;
 	    else{
+
 	      pat::CompositeCandidate cand;
 	      cand.setP4(ll_prt->p4() + k_p4);
 	      cand.setCharge(ll_prt->charge() + k_ptr->charge());
@@ -530,13 +532,14 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 	      float k_iso04  = 0;
 	      float b_iso03  = 0;
 	      float b_iso04  = 0;
-	      
+	            
 	      for( unsigned int iTrk=0; iTrk<totalTracks; ++iTrk ) {
 		
 		const pat::PackedCandidate & trk = (iTrk < nTracks) ? (*iso_tracks)[iTrk] : (*iso_lostTracks)[iTrk-nTracks];
 		// define selections for iso tracks (pT, eta, ...)
 		if( !isotrk_selection_(trk) ) continue;
 
+	
 		// only consider tracks originating close to the three bodies
 		if ( !l1_ptr->bestTrack() || fabs(trk.dz() - l1_ptr->bestTrack()->dz()) > 0.4 ) continue;
 		if ( !l2_ptr->bestTrack() || fabs(trk.dz() - l2_ptr->bestTrack()->dz()) > 0.4 ) continue;

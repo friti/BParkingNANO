@@ -13,7 +13,7 @@ BTo2mu3piCfg.postVtxSelection = cms.string(' && '.join([
 )
 BTo2mu3piCfg.kaonSelection = cms.string(' && '.join([
     #    BuilderDefaultCfg.kaonSelection.value(),
-    'pt > 2.5',
+    'pt > 1',
     'eta < 2.5',
         ])
 )
@@ -22,7 +22,7 @@ BTo2mu3pi = cms.EDProducer(
     'BTo2mu3piBuilder',
     BTo2mu3piCfg,
     srcGen = cms.InputTag("prunedGenParticles"),
-    track_mass            = cms.double(0.493677)
+    dz_value = cms.double(0.4),
 )
 
 BTo2mu3piTableVariables = TableDefaultVariables.clone(
