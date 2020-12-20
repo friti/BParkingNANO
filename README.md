@@ -8,7 +8,7 @@ cmsenv
 git cms-init
 git cms-merge-topic -u friti:TransientTracks
 git cms-merge-topic -u friti:KinParticleVtxFitter
-git clone git@github.com:friti/BParkingNANO.git  ./PhysicsTools
+git clone --single-branch --branch ul git@github.com:friti/BParkingNANO.git  ./PhysicsTools
 git cms-addpkg PhysicsTools/NanoAOD
 scram b
 ```
