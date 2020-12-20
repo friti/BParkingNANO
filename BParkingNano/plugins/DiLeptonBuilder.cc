@@ -20,6 +20,8 @@
 #include <algorithm>
 #include "KinVtxFitter.h"
 
+constexpr bool debug = false;
+
 template<typename Lepton>
 class DiLeptonBuilder : public edm::global::EDProducer<> {
 
@@ -74,12 +76,18 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
   
   for(size_t l1_idx = 0; l1_idx < leptons->size(); ++l1_idx) {
     edm::Ptr<Lepton> l1_ptr(leptons, l1_idx);
-    if(!l1_selection_(*l1_ptr)) continue; 
-    
+    if(debug) std::cout<<"In Dilepton 1 "<<l1_ptr->pt()<<std::endl;
+    if(!l1_selection_(*l1_ptr)) {
+      if(debug) std::cout<<"l1 selection dies"<<std::endl;
+      continue; 
+    }
     for(size_t l2_idx = l1_idx + 1; l2_idx < leptons->size(); ++l2_idx) {
       edm::Ptr<Lepton> l2_ptr(leptons, l2_idx);
-      if(!l2_selection_(*l2_ptr)) continue;
-
+      if(debug) std::cout<<"In Dilepton 2 "<<l2_ptr->pt()<<std::endl;
+      if(!l2_selection_(*l2_ptr)) {
+	if(debug) std::cout<<"l2 selection dies"<<std::endl;
+	continue;
+      }
       pat::CompositeCandidate lepton_pair;
       lepton_pair.setP4(l1_ptr->p4() + l2_ptr->p4());
       lepton_pair.setCharge(l1_ptr->charge() + l2_ptr->charge());
@@ -90,8 +98,11 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
       // Use UserCands as they should not use memory but keep the Ptr itself
       lepton_pair.addUserCand("l1", l1_ptr );
       lepton_pair.addUserCand("l2", l2_ptr );
-           if( !pre_vtx_selection_(lepton_pair) ) continue; // before making the SV, cut on the info we have
-
+      if( !pre_vtx_selection_(lepton_pair) ) {
+	if(debug) std::cout<<"pre vtx selection dies"<<std::endl;
+	if(debug) std::cout<<"l1 "<<l1_ptr->pt()<<" l2 "<<l2_ptr->pt()<<" mass "<<lepton_pair.mass()<<" deltaR "<<reco::deltaR(*l1_ptr, *l2_ptr)<<" dz "<<l1_ptr->bestTrack()->dz()-l2_ptr->bestTrack()->dz()<<std::endl;
+	continue; // before making the SV, cut on the info we have
+      }
       KinVtxFitter fitter(
         {ttracks->at(l1_idx), ttracks->at(l2_idx)},
         {l1_ptr->mass(), l2_ptr->mass()},
@@ -99,7 +110,7 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
         );
       
       if(!fitter.success()) {
-	//std::cout<<"fitter success dies"<<std::endl;
+	if(debug) std::cout<<"fitter success dies"<<std::endl;
 	continue; // hardcoded, but do we need otherwise?
       }
 
@@ -157,7 +168,10 @@ void DiLeptonBuilder<Lepton>::produce(edm::StreamID, edm::Event &evt, edm::Event
  // if needed, add here more stuff
 
       // cut on the SV info
-      if( !post_vtx_selection_(lepton_pair) ) continue;
+      if( !post_vtx_selection_(lepton_pair) ) {
+	if(debug) std::cout<< "post vtx selection dies"<<std::endl;
+	continue;
+      }
       ret_value->push_back(lepton_pair);
     }
   }

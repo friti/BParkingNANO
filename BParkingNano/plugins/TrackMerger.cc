@@ -23,6 +23,7 @@
 #include "DataFormats/Common/interface/AssociationVector.h"
 
 #include "helper.h"
+constexpr bool debug = false;
 
 class TrackMerger : public edm::global::EDProducer<> {
 
@@ -123,15 +124,19 @@ void TrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const 
    std::vector<pat::PackedCandidate> totalTracks(*tracks);
    totalTracks.insert(totalTracks.end(),lostTracks->begin(),lostTracks->end());
   */
- 
+   if(debug) std::cout<<"Number of total tracks in TRACK MERGER "<<totalTracks<<std::endl;
   // for loop is better to be range based - especially for large ensembles  
   for( unsigned int iTrk=0; iTrk<totalTracks; ++iTrk ) {
     const pat::PackedCandidate & trk = (iTrk < nTracks) ? (*tracks)[iTrk] : (*lostTracks)[iTrk-nTracks];
-
     //arranging cuts for speed
     if(!trk.hasTrackDetails()) continue;
+
     if(abs(trk.pdgId()) != 211) continue; //do we want also to keep muons?
-    if(trk.pt() < trkPtCut_ ) continue;
+
+    if(trk.pt() < trkPtCut_ ) {
+      continue;
+    }
+
     if(fabs(trk.eta()) > trkEtaCut_) continue;
 
     if( (trk.bestTrack()->normalizedChi2() < trkNormChiMin_ &&
@@ -229,7 +234,8 @@ void TrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const 
       pcand.addUserCand( "cand", edm::Ptr<pat::PackedCandidate> ( lostTracks, iTrk-nTracks ));   
  
   //in order to avoid revoking the sxpensive ttrack builder many times and still have everything sorted, we add them to vector of pairs
-   vectrk_ttrk.emplace_back( std::make_pair(pcand,trackTT ) );   
+    if(debug) std::cout<<"The track is saved "<<trk.pt()<<std::endl;
+    vectrk_ttrk.emplace_back( std::make_pair(pcand,trackTT ) );   
   }
 
   // sort to be uniform with leptons
@@ -242,7 +248,7 @@ void TrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup const 
   for ( auto & trk: vectrk_ttrk){
     tracks_out -> emplace_back( trk.first);
     trans_tracks_out -> emplace_back(trk.second);
-  }
+    }
 
   evt.put(std::move(tracks_out),       "SelectedTracks");
   evt.put(std::move(trans_tracks_out), "SelectedTransientTracks");

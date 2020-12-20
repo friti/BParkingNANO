@@ -35,6 +35,7 @@
 #include "KinVtxFitter.h"
 
 constexpr bool debugGen = false;
+constexpr bool debugTrig = false;
 
 class BTommmBuilder : public edm::global::EDProducer<> {
 
@@ -275,7 +276,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
   unsigned int index = names.triggerIndex("HLT_Dimuon0_Jpsi3p5_Muon2_v5"); 
   
   if(index==triggerBits->size()){
-    //    std::cout<<"Non ha HLT path giusto"<<std::endl;
+    if(debugTrig) std::cout<<"Non ha HLT path giusto"<<std::endl;
     evt.put(std::move(ret_val));
     
   }                                                                               
@@ -284,27 +285,27 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
     //salvo gli oggetti di trigger che mi interessano
     std::vector<pat::TriggerObjectStandAlone> pass_jpsi;
     std::vector<pat::TriggerObjectStandAlone> pass_3mu;
-    //std::cout<<"ha HLT path giusto"<<std::endl;
+    if(debugTrig) std::cout<<"ha HLT path giusto"<<std::endl;
     bool pass_hlt=triggerBits->accept(index);
     /*if(!pass_hlt) {
-      std::cout<<"non in pass_hlt"<<std::endl;
-      std::cout<<"ret_val size"<<ret_val->size()<<std::endl;
+      if(debugTrig) std::cout<<"non in pass_hlt"<<std::endl;
+      if(debugTrig) std::cout<<"ret_val size"<<ret_val->size()<<std::endl;
       evt.put(std::move(ret_val));
       }*/
     if(pass_hlt){
-      //std::cout<<"entra in pass_hlt"<<std::endl;
+      if(debugTrig) std::cout<<"entra in pass_hlt"<<std::endl;
       for (pat::TriggerObjectStandAlone obj : *triggerObjects){
 	obj.unpackFilterLabels(evt, *triggerBits);
 	obj.unpackPathNames(names);
 	
 	if(obj.hasFilterLabel("hltVertexmumuFilterJpsiMuon3p5")){
 	  pass_jpsi.push_back(obj);
-	  //std::cout<<"filtro jpsi="<<obj.pt()<<std::endl;
+	  if(debugTrig) std::cout<<"filter jpsi="<<obj.pt()<<" "<<obj.eta()<<" "<<obj.phi()<<std::endl;
 	}
 	
 	if (obj.hasFilterLabel("hltTripleMuL3PreFiltered222")){
 	  pass_3mu.push_back(obj);
-	  //std::cout<<"filtro 3mu="<<obj.pt()<<std::endl;
+	  if(debugTrig) std::cout<<"filter 3mu="<<obj.pt()<<std::endl;
 	}	
       }
       
@@ -314,7 +315,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
       //riconoscere quale dei 3 muoni in pass_3mu e' quello displaced
       std::vector<pat::TriggerObjectStandAlone> displaced;
       int flag=0;
-      //      std::cout<<"pass_3mu size="<<pass_3mu.size()<<std::endl;    
+      //      if(debugTrig) std::cout<<"pass_3mu size="<<pass_3mu.size()<<std::endl;    
       for(unsigned int i=0;i<pass_3mu.size() ;i++){
 	flag=0;
 	for(unsigned int j=0;j<pass_jpsi.size();j++){
@@ -324,22 +325,23 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	}
 	if(flag==0){
 	  displaced.push_back(pass_3mu[i]);
-	  //std::cout<<"il mu displaced e'="<<pass_3mu[i].pt()<<std::endl;
+	  //if(debugTrig) std::cout<<"il mu displaced e'="<<pass_3mu[i].pt()<<std::endl;
 	}
       }
       
       
-      //      std::cout<<"all muons="<<kaons->size()<<std::endl;
+      //      if(debugTrig) std::cout<<"all muons="<<kaons->size()<<std::endl;
       //Loop  on displaced muons    
       for(size_t k_idx = 0; k_idx < kaons->size(); ++k_idx) {
 	edm::Ptr<pat::Muon> k_ptr(kaons, k_idx);
+	if(debugTrig) std::cout<<"mu pt"<<k_ptr->pt()<<std::endl;
 	if( !k_selection_(*k_ptr) ) continue;
 
 	//matching online-offline del mu displaced                   
 	int flag=0;                 
 	for(pat::TriggerObjectStandAlone obj: displaced){
 	  if(deltaR(obj,*k_ptr)<0.02){
-	    //std::cout<<"deltaR"<<deltaR(obj,*k_ptr)<<std::endl;
+	    //if(debugTrig) std::cout<<"deltaR"<<deltaR(obj,*k_ptr)<<std::endl;
 	    flag=1;
 	  }
 	}
@@ -349,7 +351,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	}
 	else{ //ha trovato il mu displaced
     
-	  //std::cout<<"mu displaced triggerato="<<k_ptr->pt()<<std::endl;
+	  if(debugTrig) std::cout<<"mu displaced triggerato="<<k_ptr->pt()<<std::endl;
 	  math::PtEtaPhiMLorentzVector k_p4(
 					    k_ptr->pt(), 
 					    k_ptr->eta(),
@@ -357,6 +359,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 					    k_ptr->mass()
 					    );
 
+	  if(debugTrig) std::cout<<"dileptons size"<<dileptons->size()<<std::endl;
 	  for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
 	    edm::Ptr<pat::CompositeCandidate> ll_prt(dileptons, ll_idx);
 	    edm::Ptr<reco::Candidate> l1_ptr = ll_prt->userCand("l1");
@@ -370,22 +373,27 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	    flag=0;
 	    for(pat::TriggerObjectStandAlone obj: pass_jpsi){
 	      for(pat::TriggerObjectStandAlone obj2: pass_jpsi){  
+		if(debugTrig) std::cout<<"DR "<<deltaR(obj,*l1_ptr)<<" "<<deltaR(obj2,*l2_ptr)<<std::endl;
+		if(debugTrig) std::cout<<obj.pt()<<" "<<obj.eta()<<std::endl; 
+		if(debugTrig) std::cout<<l1_ptr->pt()<<" "<<l1_ptr->eta()<<std::endl; 
+
+		if(debugTrig) std::cout<<obj2.pt()<<" "<<obj2.eta()<<std::endl; 
+		if(debugTrig) std::cout<<l2_ptr->pt()<<" "<<l2_ptr->eta()<<std::endl; 
 		if((deltaR(obj,*l1_ptr)<0.02) && (deltaR(obj2,*l2_ptr)<0.02)){
 		  flag=1;
 		}
 	      }
 	    }
-	    
 	    if(flag==0) continue;
 	    else{
 
-	      //std::cout<<"dileptons: 1="<<l1_ptr->pt()<<"; 2= "<<l2_ptr->pt()<<std::endl;
+	      if(debugTrig) std::cout<<"dileptons: 1="<<l1_ptr->pt()<<"; 2= "<<l2_ptr->pt()<<std::endl;
 	      pat::CompositeCandidate cand;
 	      cand.setP4(ll_prt->p4() + k_p4);
 	      cand.setCharge(ll_prt->charge() + k_ptr->charge());
 	      // Use UserCands as they should not use memory but keep the Ptr itself
 	      // Put the lepton passing the corresponding selection
-	      //std::cout<<cand.pt()<<" "<<std::endl;
+	      //if(debugTrig) std::cout<<cand.pt()<<" "<<std::endl;
 	      cand.addUserCand("l1", l1_ptr);
 	      cand.addUserCand("l2", l2_ptr);
 	      cand.addUserCand("K", k_ptr);
@@ -437,19 +445,19 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	      cand.addUserFloat("weightGen", weight);
 	      
 	      if( !pre_vtx_selection_(cand) ) {
-		//std::cout<<"pre vtx selection dies"<<std::endl;
+		if(debugTrig) std::cout<<"pre vtx selection dies"<<std::endl;
 		continue;
 	      }
 	      
-	      //	      std::cout<<"PRIMA"<<std::endl;
+	      //	      if(debugTrig) std::cout<<"PRIMA"<<std::endl;
 	      KinVtxFitter fitter(
 				  {leptons_ttracks->at(l1_idx), leptons_ttracks->at(l2_idx), kaons_ttracks->at(k_idx)},
 				  {l1_ptr->mass(), l2_ptr->mass(), k_ptr->mass()},
 				  {LEP_SIGMA, LEP_SIGMA, LEP_SIGMA} //some small sigma for the lepton mass
 				  );
-	      //std::cout<<"DOPO"<<std::endl;
+	      //if(debugTrig) std::cout<<"DOPO"<<std::endl;
 	      if(!fitter.success()) {
-		//std::cout<<"fitter success dies"<<std::endl;
+		if(debugTrig) std::cout<<"fitter success dies"<<std::endl;
 		continue; // hardcoded, but do we need otherwise?
 	      }
 		cand.setVertex( 
@@ -481,6 +489,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 				"fitted_cos_theta_2D", 
 				cos_theta_2D(fitter, *beamspot, fit_p4)
 				);
+	      if(debugTrig) std::cout << "postvtx" <<fitter.success()<<" "<<fitter.prob()<<" "<<cos_theta_2D(fitter, *beamspot, fit_p4)<<" "<<cand.mass()<< std::endl;
 	      auto lxy = l_xy(fitter, *beamspot);
 	      cand.addUserFloat("l_xy", lxy.value());
 	      cand.addUserFloat("l_xy_unc", lxy.error());
@@ -579,9 +588,9 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 	    
 	      cand.addUserFloat("E_mu_#",P_mu.E());
 	      
-	      //std::cout<<cos_theta_2D(fitter, *beamspot, fit_p4)<<std::endl;
+	      //if(debugTrig) std::cout<<cos_theta_2D(fitter, *beamspot, fit_p4)<<std::endl;
 	      if( !post_vtx_selection_(cand) ) {
-		//std::cout<<"post vtx dies"<<std::endl;
+		if(debugTrig) std::cout<<"post vtx dies"<<std::endl;
 		continue;        
 	      }
 	      //std::cout<<"EHIIII"<<std::endl;
@@ -615,7 +624,7 @@ void BTommmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup cons
 		}*/
 		
 		if(track_to_lepton_match(k_ptr, iso_tracks.id(), iTrk)  ) {
-		  // std::cout<<"new"<<std::endl;
+		  // if(debugTrig) std::cout<<"new"<<std::endl;
 		  continue;
 		}
 		// check if the track is one of the two leptons

@@ -29,6 +29,7 @@
 #include "KinVtxFitter.h"
 
 constexpr bool debugGen = false;
+constexpr bool debug = false;
 
 class BToTrackmmBuilder : public edm::global::EDProducer<> {
 
@@ -265,7 +266,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
   unsigned int index2 = names.triggerIndex("HLT_DoubleMu4_JpsiTrk_Displaced_v15");
   bool pass_hlt;
   if(index==triggerBits->size() && index2==triggerBits->size()){
-    //    std::cout<<"Non ha HLT path giusto"<<std::endl;
+    if(debug)    std::cout<<"Non ha HLT path giusto"<<std::endl;
     evt.put(std::move(ret_val));
   }                                                                               
   else{
@@ -278,7 +279,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
     std::vector<pat::TriggerObjectStandAlone> pass_jpsi;
     std::vector<pat::TriggerObjectStandAlone> pass_trk;
     if(pass_hlt){
-      //std::cout<<"entra in pass_hlt"<<std::endl;
+      if(debug) std::cout<<" TRACK entra in pass_hlt"<<std::endl;
       for (pat::TriggerObjectStandAlone obj : *triggerObjects){
 	obj.unpackFilterLabels(evt, *triggerBits);
 	obj.unpackPathNames(names);
@@ -286,9 +287,11 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 	//std::cout<<names<<std::endl;
 	if(obj.hasFilterLabel("hltDisplacedmumuFilterDoubleMu4Jpsi")) {
 	  pass_jpsi.push_back(obj);
+	  if(debug) std::cout<<"filter jpsi="<<obj.pt()<<" "<<obj.eta()<<" "<<obj.phi()<<std::endl;
 	}
 	else if(obj.hasFilterLabel("hltJpsiTkVertexFilter")) {
 	  pass_trk.push_back(obj);
+	  if(debug) std::cout<<"filter 3mu="<<obj.pt()<<std::endl;
 	}
 	
       }
@@ -297,11 +300,12 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
       //loop on trks
       for(size_t k_idx = 0; k_idx < kaons->size(); ++k_idx) {
 	edm::Ptr<pat::CompositeCandidate> k_ptr(kaons, k_idx);
+	//if(debug) std::cout<<"Track pre "<<k_ptr->pt()<<std::endl;
 	if( !k_selection_(*k_ptr) ) continue;
-
 	//matching online-offline della trk
 	int flag = 0;
 	for(pat::TriggerObjectStandAlone obj: pass_trk){
+	  if(debug) std::cout<<"Trigger obj "<<obj.pt()<<" reco obj "<<k_ptr->pt()<<" DR "<<deltaR(obj,*k_ptr)<<std::endl;
 	  if(deltaR(obj,*k_ptr)<0.02) flag=1;
 	}    
 	if(flag == 0) continue;
@@ -313,7 +317,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 					    k_ptr->phi(),
 					    k_mass
 					    );
-	  
+	  if(debug) std::cout<<"matching track "<<k_ptr->pt()<<std::endl;
 	  for(size_t ll_idx = 0; ll_idx < dileptons->size(); ++ll_idx) {
 	    edm::Ptr<pat::CompositeCandidate> ll_prt(dileptons, ll_idx);
 	    edm::Ptr<reco::Candidate> l1_ptr = ll_prt->userCand("l1");
@@ -331,6 +335,7 @@ void BToTrackmmBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup 
 	    }
 	    if(flag==0) continue;
 	    else{
+	      if(debug) std::cout<<"matching muons jpsi "<<l1_ptr->pt()<<" "<<l2_ptr->pt()<<std::endl;
 
 	      pat::CompositeCandidate cand;
 	      cand.setP4(ll_prt->p4() + k_p4);
