@@ -29,6 +29,7 @@
 #include "KinVtxFitter.h"
 
 constexpr bool debugGen = false;
+constexpr bool debug = false;
 
 class BTo2mu3piBuilder : public edm::global::EDProducer<> {
 
@@ -277,9 +278,11 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	
 	if(obj.hasFilterLabel("hltDisplacedmumuFilterDoubleMu4Jpsi")) {
 	  pass_jpsi.push_back(obj);
+	  if(debug) std::cout<<"pass the jpsi trigger "<<obj.pt()<<std::endl;
 	}
 	else if(obj.hasFilterLabel("hltJpsiTkVertexFilter")) {
 	  pass_trk.push_back(obj);
+	  if(debug) std::cout<<"pass the trk trigger "<<obj.pt()<<std::endl;
 	}
 	
       }
@@ -294,78 +297,90 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 	int l2_idx = ll_prt->userInt("l2_idx");
 	
 	int flag = 0;
-	for(size_t pi1_idx = 0; pi1_idx < kaons->size(); ++pi1_idx) {
-	  edm::Ptr<pat::CompositeCandidate> pi1_ptr(kaons, pi1_idx);
-	  if( !k_selection_(*pi1_ptr) ) continue;
-	  //dz requirement
-	  if ( fabs(kaons_ttracks->at(pi1_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi1_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
-	  //dR requirement
-	  if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
-	  if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
-
-	  //matching online-offline della trk
-	  for(pat::TriggerObjectStandAlone obj: pass_trk){
-	    if(deltaR(obj,*pi1_ptr)<0.02) flag=1;
-	  }    
-	  
-	  if(flag == 1){ 
-
-	
-	    math::PtEtaPhiMLorentzVector pi1_p4(
-						pi1_ptr->pt(), 
-						pi1_ptr->eta(),
-						pi1_ptr->phi(),
-						PI_MASS
-						);
+	//matching online- offline di jpsi
+	for(pat::TriggerObjectStandAlone obj: pass_jpsi){
+	  for(pat::TriggerObjectStandAlone obj2: pass_jpsi){  
+	    if((deltaR(obj,*l1_ptr)<0.02) && (deltaR(obj2,*l2_ptr)<0.02))  flag=1;
+	  }
+	}
+	if(flag==0) continue;
+	else{
+	  for(size_t pi1_idx = 0; pi1_idx < kaons->size(); ++pi1_idx) {
+	    edm::Ptr<pat::CompositeCandidate> pi1_ptr(kaons, pi1_idx);
+	    if( !k_selection_(*pi1_ptr) ) continue;
+	    //dz requirement
+	    if ( fabs(kaons_ttracks->at(pi1_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi1_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+	    //dR requirement
+	    if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
+	    if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi1_idx).track().eta(),kaons_ttracks->at(pi1_idx).track().phi()) < 0.1 ) continue;
 	    
-	    for(size_t pi2_idx = 0; pi2_idx < kaons->size(); ++pi2_idx) {
-	      edm::Ptr<pat::CompositeCandidate> pi2_ptr(kaons, pi2_idx);
-	      if( !k_selection_(*pi2_ptr) ) continue;
-	      if(pi2_idx == pi1_idx) continue;
-	      // dz between track and leptons
-	      if ( fabs(kaons_ttracks->at(pi2_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi2_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
-	      //DR between tracks and leptons
-	      if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
-	      if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
-
-	      math::PtEtaPhiMLorentzVector pi2_p4(
-						  pi2_ptr->pt(), 
-						  pi2_ptr->eta(),
-						  pi2_ptr->phi(),
+	    int flag_track = 0;
+	    //matching online-offline della trk
+	    for(pat::TriggerObjectStandAlone obj: pass_trk){
+	      if(deltaR(obj,*pi1_ptr)<0.02) {
+		flag_track=1;
+		if(debug) std::cout<<"matching track reco "<<pi1_ptr->pt()<<" HLT "<<obj.pt()<<" dR = "<<deltaR(obj,*pi1_ptr)<<std::endl;
+	      }
+	    }    
+	    
+	    if(flag_track == 1){ 
+	      
+	      
+	      math::PtEtaPhiMLorentzVector pi1_p4(
+						  pi1_ptr->pt(), 
+						  pi1_ptr->eta(),
+						  pi1_ptr->phi(),
 						  PI_MASS
 						  );
-	      for(size_t pi3_idx = 0; pi3_idx < kaons->size(); ++pi3_idx) {
-		edm::Ptr<pat::CompositeCandidate> pi3_ptr(kaons, pi3_idx);
-		if( !k_selection_(*pi3_ptr) ) continue;
-		if(pi3_idx == pi1_idx or pi3_idx == pi2_idx) continue;
-		//dz requirement
-		if ( fabs(kaons_ttracks->at(pi3_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi3_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
-		//DR requirements
-		if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
-		if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
-
+	      
+	      for(size_t pi2_idx = 0; pi2_idx < kaons->size(); ++pi2_idx) {
+		edm::Ptr<pat::CompositeCandidate> pi2_ptr(kaons, pi2_idx);
+		if( !k_selection_(*pi2_ptr) ) continue;
+		if(pi2_idx == pi1_idx) continue;
+		// dz between track and leptons
+		if ( fabs(kaons_ttracks->at(pi2_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi2_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+		//DR between tracks and leptons
+		if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
+		if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi2_idx).track().eta(),kaons_ttracks->at(pi2_idx).track().phi()) < 0.1 ) continue;
 		
-		math::PtEtaPhiMLorentzVector pi3_p4(
-						    pi3_ptr->pt(), 
-						    pi3_ptr->eta(),
-						    pi3_ptr->phi(),
+		math::PtEtaPhiMLorentzVector pi2_p4(
+						    pi2_ptr->pt(), 
+						    pi2_ptr->eta(),
+						    pi2_ptr->phi(),
 						    PI_MASS
 						    );
-		
-		//matching online- offline di jpsi
-		flag = 0;
-		for(pat::TriggerObjectStandAlone obj: pass_jpsi){
-		  for(pat::TriggerObjectStandAlone obj2: pass_jpsi){  
-		    if((deltaR(obj,*l1_ptr)<0.02) && (deltaR(obj2,*l2_ptr)<0.02))  flag=1;
-		  }
-		}
-		if(flag==0) continue;
-		else{
+		for(size_t pi3_idx = 0; pi3_idx < kaons->size(); ++pi3_idx) {
+		  edm::Ptr<pat::CompositeCandidate> pi3_ptr(kaons, pi3_idx);
+		  if( !k_selection_(*pi3_ptr) ) continue;
+		  if(pi3_idx == pi1_idx or pi3_idx == pi2_idx) continue;
+		  //dz requirement
+		  if ( fabs(kaons_ttracks->at(pi3_idx).track().dz() - l1_ptr->bestTrack()->dz()) > 0.4 ||  fabs(kaons_ttracks->at(pi3_idx).track().dz() - l2_ptr->bestTrack()->dz()) > 0.4) continue;
+		  //DR requirements
+		  if(deltaR(leptons_ttracks->at(l2_idx).track().eta(),leptons_ttracks->at(l2_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
+		  if(deltaR(leptons_ttracks->at(l1_idx).track().eta(),leptons_ttracks->at(l1_idx).track().phi(),kaons_ttracks->at(pi3_idx).track().eta(),kaons_ttracks->at(pi3_idx).track().phi()) < 0.1 ) continue;
+		  
+		  
+		  math::PtEtaPhiMLorentzVector pi3_p4(
+						      pi3_ptr->pt(), 
+						      pi3_ptr->eta(),
+						      pi3_ptr->phi(),
+						      PI_MASS
+						      );
+		  
+		  
+		  if(debug) std::cout<<"candidates"<<std::endl;
+		  
 		  pat::CompositeCandidate cand;
 		  cand.setP4(ll_prt->p4() + pi1_p4 + pi2_p4 + pi3_p4);
 		  cand.setCharge(ll_prt->charge() + pi1_ptr->charge() + pi2_ptr->charge() + pi3_ptr->charge()  );
 	      // Use UserCands as they should not use memory but keep the Ptr itself
 	      // Put the lepton passing the corresponding selection
+		  if(debug) std::cout<<"cand pt "<<cand.pt()<<std::endl;
+		  if(debug) std::cout<<"displ p1 "<<pi1_ptr->pt()<<std::endl;
+		  if(debug) std::cout<<"displ p2 "<<pi2_ptr->pt()<<std::endl;
+		  if(debug) std::cout<<"displ p3 "<<pi3_ptr->pt()<<std::endl;
+		  if(debug) std::cout<<"displ m1 "<<l1_ptr->pt()<<std::endl;
+		  if(debug) std::cout<<"displ m2 "<<l2_ptr->pt()<<std::endl;
 		  cand.addUserCand("l1", l1_ptr);
 		  cand.addUserCand("l2", l2_ptr);
 		  cand.addUserCand("pi1", pi1_ptr);
@@ -570,7 +585,7 @@ void BTo2mu3piBuilder::produce(edm::StreamID, edm::Event &evt, edm::EventSetup c
 		  */
 
 		  if( !post_vtx_selection_(cand) ) continue;        
-
+		  if(debug) std::cout<<"Pass the post vrxt"<<std::endl;
 		  //compute isolation
 		  float l1_iso03 = 0;
 		  float l1_iso04 = 0;
